@@ -1,0 +1,134 @@
+
+?(5)=2000	//Anno
+?(4)=2		//Mese
+?(3)=22		//Giorno
+?(2)=18		//Ora
+?(1)=0		//Minuti
+?(0)=50		//Secondi
+PRINT?(5),?(4),?(3),?(2),?(1),?(0)
+STIME
+PRINT"STIME"
+SETRTC
+PRINT"SETRTC"
+
+aOra=18
+aMinuti=1
+sOra=18
+sMinuti=2
+
+
+Interval=10
+
+Loop:		//Loop di acquisizione
+
+
+Parti:
+PRINT"Raccolta dati"
+EventTime = ?		// start time in seconds
+Tultima=Tprossima	//
+	
+//PCLR Extern		
+PCLR 0,1,2,3,4,5,6,7,17,19,20,21,22,23	//Spegne tutto TRANNE L'INTERRUPT e il modem (18)
+
+RTIME
+Time2=?
+
+
+tempo=Interval
+
+Tprossima=Tultima+Interval	//Calcolo tempo prossima acquisizione
+PRINT "Tempo ultima misura   -->",Tultima
+PRINT "Tempo prossima misura -->",Tprossima
+PRINT "Intervallo -->",Interval
+PRINT "Differenza -->",Tprossima-Tultima
+
+loop2:
+tempo=2	//Impostazione tempo per HYB
+t0=?
+
+loop1:
+
+PRINT "Sto per dormire per ",tempo," secondi! ",?
+IF tempo<0 tempo=0
+
+//PCLR Extern
+PCLR 0,1,2,3,4,5,6,7,17,19,20,21,22,23	//Spegne tutto 
+
+
+//CBREAK Com
+PICINT 1  //,1
+PRINT "PICINT"
+HYB tempo
+
+
+IF INTSTATE=0
+
+	//PICINT 0
+	PRINT"Interrupt!"
+	IF ? >= Tprossima
+		GOTO Loop
+	ENDIF
+	//Dummy=PIN(/Stopp)	//Controlla che non sia stato il tasto STOP o ALT
+	Dummy=1
+	IF Dummy<>0
+		SLEEP 0			//Attesa 0.75 secondi
+		SLEEP 75		//Il tasto e' ancora premuto?
+			t2=?
+			tempo=30-(t2-t0)
+			HYB 0
+			GOTO loop1
+	ENDIF
+	t2=?
+	tempo=Interval-(t2-t0)
+	HYB 0
+	PRINT "INTSTATE"
+	GOTO loop2
+ENDIF
+
+//Controllo che non sia ora di accendere il modem
+// ?(2);	//Ora
+// ?(1);	//Minuti
+
+XMIT+
+RTIME
+//READRTC
+PRINT "1"
+PRINT ?(2),":",?(1),":",?(0)," aOra ",aOra,":",aMinuti
+
+IF ?(2)>=aOra & ?(1)>=aMinuti & ?(2)<=sOra & ?(1)<sMinuti
+	IF ModemOn=0
+		PRINT "2 ACCENDO!!!!!!"
+		PRINT "ore ",?(2),"aOra ",aOra
+		PRINT "minuti ",?(1),"aMinuti ",aMinuti
+		PSET 18
+		ModemOn=1
+	ENDIF
+ENDIF
+
+// controlla che non sia ora di spegnere
+IF ?(2)>=sOra &?(1)>=sMinuti
+	IF ModemOn=1
+		PRINT "4 SPENGO!!!!!!!!"
+		PRINT "ore ",?(2),"sOra ",sOra
+		PRINT "minuti ",?(1),"sMinuti ",sMinuti
+		PCLR 18
+		ModemOn=0
+	ENDIF
+
+ENDIF
+
+
+
+//Controllo che non si sia raggiunto il tempo per la prossima misura
+
+IF ?>= Tprossima
+	GOTO Loop
+ELSE
+	//PSET Extern
+	PRINT "Tempo rimanente -->",?-Tprossima
+	GOTO loop2
+ENDIF
+
+//Fine Loop acquisizione
+
+

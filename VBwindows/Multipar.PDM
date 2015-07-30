@@ -1,0 +1,511 @@
+[Root]
+Most Recent Package=Pacchetto di installazione standard 1
+
+
+[Package|File .dep 1|Root]
+SubWizProgID=PDWizard.DepPkgSubWiz
+BuildFolder=d:\CD\_INGV\Installazioni\multipar\Support
+
+[Package|File .dep 1|Configure DAO ISAMs]
+Applicable=Yes
+Xbase=No
+Excel=No
+Text=No
+Jet 2.x=Yes
+
+[Package|File .dep 1|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|File .dep 1|Files Found]
+VB6STKIT.DLL=C:\WINNT\system32\VB6STKIT.DLL
+
+[Package|File .dep 1|Files Released]
+
+[Package|File .dep 1|Missing Dependency Information]
+C:\WINDOWS\SYSTEM\MSCHART.OCX=
+C:\WINNT\system32\MSCHART.OCX=
+C:\WINNT\system32\DBGRID32.OCX=
+
+[Package|File .dep 1|Out-of-Date Dependency Information]
+
+[Package|File .dep 1|Files Added]
+d:\cd\_ingv\stazioniacque\multipar\rubrica.mdb=
+
+[Package|File .dep 1|Files Removed]
+
+[Package|File .dep 1|Files In Project]
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=Yes
+C:\WINNT\system32\MSVBVM60.DLL=Yes
+C:\WINNT\system32\VB6IT.DLL=Yes
+C:\WINNT\system32\COMDLG32.OCX=Yes
+C:\WINNT\system32\CMDLGIT.DLL=Yes
+C:\WINNT\system32\MSCOMM32.OCX=Yes
+C:\WINNT\system32\MSCOMIT.DLL=Yes
+C:\WINNT\system32\COMCTL32.OCX=Yes
+C:\WINNT\system32\CMCTLIT.DLL=Yes
+C:\WINNT\system32\DBGRID32.OCX=Yes
+C:\WINNT\system32\MSJET35.DLL=Yes
+C:\WINNT\system32\MSJTER35.DLL=Yes
+C:\WINNT\system32\MSJINT35.DLL=Yes
+C:\WINNT\system32\vbajet32.dll=Yes
+C:\WINNT\system32\expsrv.dll=Yes
+C:\WINNT\system32\MSRD2X35.DLL=Yes
+C:\WINNT\system32\MSREPL35.DLL=Yes
+C:\WINNT\system32\VB5DB.DLL=Yes
+C:\WINNT\system32\MSCHART.OCX=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=Yes
+
+[Package|File .dep 1|Configure Registry Files]
+Applicable=No
+
+[Package|File .dep 1|Configure Remote Servers]
+Applicable=No
+
+[Package|File .dep 1|Install Locations]
+C:\CD\_INGV\Multipar\Multipar.exe=$(AppPath)
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB6IT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMDLG32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMDLGIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMCTL32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMCTLIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRID32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRDIT.DLL=$(WinSysPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=$(MSDAOPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=$(MSDAOPath)
+C:\WINDOWS\SYSTEM\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VBAJET32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\EXPSRV.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB5DB.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCHART.OCX=$(WinSysPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6IT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGIT.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCOMM32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSCOMIT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMCTLIT.DLL=$(WinSysPath)
+C:\WINNT\system32\DBGRID32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\vbajet32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\expsrv.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB5DB.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCHART.OCX=$(WinSysPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=$(AppPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+
+[Package|File .dep 1|Configure Shared Files]
+Applicable=Yes
+C:\CD\_INGV\Multipar\Multipar.exe=No
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=No
+
+[Package|File .dep 1|Distribution]
+Type=single
+Size=1.44 MB
+Title=Multipar
+
+[Package|File .dep 1|IconGroups]
+Group0=Multipar
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|File .dep 1|Multipar]
+Icon1=Multipar.exe
+Title1=Multipar
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|File .dep 1|DepFile]
+DepCabFile=Multipar.CAB
+DepCabRun=Multipar.INF
+
+[Package|File .dep 1|Package]
+PackageFolder=d:\CD\_INGV\Installazioni\multipar\Support
+ProjectFolder=D:\CD\_INGV\StazioniAcque\Multipar
+ServerSideCab=
+File1=d:\CD\_INGV\Installazioni\multipar\Support\Multipar.DEP
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|Pacchetto di installazione standard 2|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=d:\CD\_INGV\Installazioni\multipar
+
+[Package|Pacchetto di installazione standard 2|Configure DAO ISAMs]
+Applicable=Yes
+Xbase=No
+Excel=No
+Text=No
+Jet 2.x=Yes
+Exchange=No
+Lotus=No
+Paradox=No
+
+[Package|Pacchetto di installazione standard 2|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Pacchetto di installazione standard 2|Files Found]
+VB6STKIT.DLL=C:\WINNT\system32\VB6STKIT.DLL
+
+[Package|Pacchetto di installazione standard 2|Files Released]
+
+[Package|Pacchetto di installazione standard 2|Missing Dependency Information]
+C:\WINDOWS\SYSTEM\MSCHART.OCX=
+C:\WINNT\system32\MSCHART.OCX=
+C:\WINNT\system32\DBGRID32.OCX=
+
+[Package|Pacchetto di installazione standard 2|Out-of-Date Dependency Information]
+
+[Package|Pacchetto di installazione standard 2|Files Added]
+d:\cd\_ingv\stazioniacque\multipar\rubrica.mdb=
+
+[Package|Pacchetto di installazione standard 2|Files Removed]
+
+[Package|Pacchetto di installazione standard 2|Files In Project]
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=Yes
+C:\WINNT\system32\MSVBVM60.DLL=Yes
+C:\WINNT\system32\VB6IT.DLL=Yes
+C:\WINNT\system32\COMDLG32.OCX=Yes
+C:\WINNT\system32\CMDLGIT.DLL=Yes
+C:\WINNT\system32\MSCOMM32.OCX=Yes
+C:\WINNT\system32\MSCOMIT.DLL=Yes
+C:\WINNT\system32\COMCTL32.OCX=Yes
+C:\WINNT\system32\CMCTLIT.DLL=Yes
+C:\WINNT\system32\DBGRID32.OCX=Yes
+C:\WINNT\system32\MSJET35.DLL=Yes
+C:\WINNT\system32\MSJTER35.DLL=Yes
+C:\WINNT\system32\MSJINT35.DLL=Yes
+C:\WINNT\system32\vbajet32.dll=Yes
+C:\WINNT\system32\expsrv.dll=Yes
+C:\WINNT\system32\MSRD2X35.DLL=Yes
+C:\WINNT\system32\MSREPL35.DLL=Yes
+C:\WINNT\system32\VB5DB.DLL=Yes
+C:\WINNT\system32\MSCHART.OCX=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINNT\system32\VB6STKIT.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|Pacchetto di installazione standard 2|Configure Registry Files]
+Applicable=No
+
+[Package|Pacchetto di installazione standard 2|Configure Remote Servers]
+Applicable=No
+
+[Package|Pacchetto di installazione standard 2|Install Locations]
+C:\CD\_INGV\Multipar\Multipar.exe=$(AppPath)
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB6IT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMDLG32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMDLGIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMCTL32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMCTLIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRID32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRDIT.DLL=$(WinSysPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=$(MSDAOPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=$(MSDAOPath)
+C:\WINDOWS\SYSTEM\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VBAJET32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\EXPSRV.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB5DB.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCHART.OCX=$(WinSysPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6IT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGIT.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCOMM32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSCOMIT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMCTLIT.DLL=$(WinSysPath)
+C:\WINNT\system32\DBGRID32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\vbajet32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\expsrv.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB5DB.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCHART.OCX=$(WinSysPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=$(AppPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+
+[Package|Pacchetto di installazione standard 2|Configure Shared Files]
+Applicable=Yes
+C:\CD\_INGV\Multipar\Multipar.exe=No
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=No
+
+[Package|Pacchetto di installazione standard 2|Distribution]
+Type=single
+Size=1.44 MB
+Title=Multipar
+
+[Package|Pacchetto di installazione standard 2|DepFile]
+DepCabFile=Multipar.CAB
+DepCabRun=Multipar.INF
+
+[Package|Pacchetto di installazione standard 2|IconGroups]
+Group0=Multipar
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|Pacchetto di installazione standard 2|Multipar]
+Icon1=Multipar.exe
+Title1=Multipar
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|Pacchetto di installazione standard 2|Package]
+PackageFolder=d:\CD\_INGV\Installazioni\multipar
+ProjectFolder=D:\CD\_INGV\StazioniAcque\Multipar
+ServerSideCab=
+File1=d:\CD\_INGV\Installazioni\multipar\setup.exe
+File2=d:\CD\_INGV\Installazioni\multipar\Setup.Lst
+File3=d:\CD\_INGV\Installazioni\multipar\Multipar.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|Pacchetto di installazione standard 1|Multipar]
+Icon1=Multipar.exe
+Title1=Multipar
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|Pacchetto di installazione standard 1|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=d:\CD\_INGV\Installazioni\multipar
+
+[Package|Pacchetto di installazione standard 1|Configure DAO ISAMs]
+Applicable=Yes
+Xbase=No
+Excel=No
+Text=No
+Jet 2.x=Yes
+Exchange=No
+Lotus=No
+Paradox=No
+
+[Package|Pacchetto di installazione standard 1|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Pacchetto di installazione standard 1|Files Found]
+VB6STKIT.DLL=C:\WINNT\system32\VB6STKIT.DLL
+
+[Package|Pacchetto di installazione standard 1|Files Released]
+
+[Package|Pacchetto di installazione standard 1|Missing Dependency Information]
+C:\WINDOWS\SYSTEM\MSCHART.OCX=
+C:\WINNT\system32\MSCHART.OCX=
+C:\WINNT\system32\DBGRID32.OCX=
+C:\Programmi\Microsoft Office\Office10\EXCEL.EXE=
+
+[Package|Pacchetto di installazione standard 1|Out-of-Date Dependency Information]
+
+[Package|Pacchetto di installazione standard 1|Files Added]
+d:\cd\_ingv\stazioniacque\multipar\rubrica.mdb=
+d:\cd\_ingv\stazioniacque\multipar\multiparposeidon.ini=
+
+[Package|Pacchetto di installazione standard 1|Files Removed]
+c:\programmi\microsoft office\office10\excel.exe=
+
+[Package|Pacchetto di installazione standard 1|Files In Project]
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=Yes
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\ST6UNST.EXE=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=Yes
+C:\WINNT\system32\MSVBVM60.DLL=Yes
+C:\WINNT\system32\VB6IT.DLL=Yes
+C:\WINNT\system32\COMDLG32.OCX=Yes
+C:\WINNT\system32\CMDLGIT.DLL=Yes
+C:\WINNT\system32\MSCOMM32.OCX=Yes
+C:\WINNT\system32\MSCOMIT.DLL=Yes
+C:\WINNT\system32\COMCTL32.OCX=Yes
+C:\WINNT\system32\CMCTLIT.DLL=Yes
+C:\WINNT\system32\DBGRID32.OCX=Yes
+C:\WINNT\system32\MSJET35.DLL=Yes
+C:\WINNT\system32\MSJTER35.DLL=Yes
+C:\WINNT\system32\MSJINT35.DLL=Yes
+C:\WINNT\system32\vbajet32.dll=Yes
+C:\WINNT\system32\expsrv.dll=Yes
+C:\WINNT\system32\MSRD2X35.DLL=Yes
+C:\WINNT\system32\MSREPL35.DLL=Yes
+C:\WINNT\system32\VB5DB.DLL=Yes
+C:\WINNT\system32\MSCHART.OCX=Yes
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=Yes
+C:\WINNT\system32\VB6STKIT.DLL=Yes
+C:\Programmi\Microsoft Office\Office10\EXCEL.EXE=No
+D:\CD\_INGV\StazioniAcque\Multipar\MultiparPoseidon.ini=Yes
+
+[Package|Pacchetto di installazione standard 1|Configure Registry Files]
+Applicable=No
+
+[Package|Pacchetto di installazione standard 1|Configure Remote Servers]
+Applicable=No
+
+[Package|Pacchetto di installazione standard 1|Install Locations]
+C:\CD\_INGV\Multipar\Multipar.exe=$(AppPath)
+C:\WINDOWS\SYSTEM\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB6IT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMDLG32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMDLGIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMM32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCOMIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\COMCTL32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\CMCTLIT.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRID32.OCX=$(WinSysPath)
+C:\WINDOWS\SYSTEM\DBGRDIT.DLL=$(WinSysPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO2535.TLB=$(MSDAOPath)
+C:\Programmi\File comuni\Microsoft Shared\DAO\DAO350.DLL=$(MSDAOPath)
+C:\WINDOWS\SYSTEM\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VBAJET32.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\EXPSRV.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\Redist\MSVCRT40.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\SYSTEM\VB5DB.DLL=$(WinSysPath)
+C:\WINDOWS\SYSTEM\MSCHART.OCX=$(WinSysPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINDOWS\SYSTEM\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Linguaggi\VisualBasic6\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6IT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGIT.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCOMM32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSCOMIT.DLL=$(WinSysPath)
+C:\WINNT\system32\COMCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMCTLIT.DLL=$(WinSysPath)
+C:\WINNT\system32\DBGRID32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSJET35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJTER35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJINT35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\vbajet32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\expsrv.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSRD2X35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\MSREPL35.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB5DB.DLL=$(WinSysPath)
+C:\WINNT\system32\MSCHART.OCX=$(WinSysPath)
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=$(AppPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Programmi\Microsoft Office\Office10\EXCEL.EXE=$(AppPath)
+D:\CD\_INGV\StazioniAcque\Multipar\MultiparPoseidon.ini=$(AppPath)
+
+[Package|Pacchetto di installazione standard 1|Configure Shared Files]
+Applicable=Yes
+C:\CD\_INGV\Multipar\Multipar.exe=No
+C:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Multipar.exe=No
+D:\CD\_INGV\StazioniAcque\Multipar\Rubrica.mdb=No
+C:\Programmi\Microsoft Office\Office10\EXCEL.EXE=No
+D:\CD\_INGV\StazioniAcque\Multipar\MultiparPoseidon.ini=No
+
+[Package|Pacchetto di installazione standard 1|Distribution]
+Type=single
+Size=1.44 MB
+Title=Multipar
+
+[Package|Pacchetto di installazione standard 1|Package]
+PackageFolder=d:\CD\_INGV\Installazioni\multipar
+ProjectFolder=D:\CD\_INGV\StazioniAcque\Multipar
+ServerSideCab=
+File1=d:\CD\_INGV\Installazioni\multipar\setup.exe
+File2=d:\CD\_INGV\Installazioni\multipar\Setup.Lst
+File3=d:\CD\_INGV\Installazioni\multipar\Multipar.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+[Package|Pacchetto di installazione standard 1|IconGroups]
+Group0=INGV
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|Pacchetto di installazione standard 1|INGV]
+Icon1=Multipar.exe
+Title1=Multipar
+StartIn1=$(AppPath)
+Key1=Icon1

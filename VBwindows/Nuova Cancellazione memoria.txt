@@ -1,0 +1,17 @@
+ost computer action	TFBASIC action
+Send Ctrl-E	Echoes Ctrl-E
+Send FA hex (within one second
+of receiving the echoed Ctrl-E)	Erases datafile
+		Sets datafile pointer to 0
+		Sends '0' on no errors
+		or sends '1' if error
+
+
+Chiama	"99"+vbCR
+TFX11	vbCrLf
+TFX11	# (senza vbCrLf)
+Chiama	chr(5)
+Chiama	chr(250)
+TFX11	chr(5)
+TFX11	0+vbCrLF (tutto ok) 1+vbCrLf (Fallito!!!)
+TFX11	#

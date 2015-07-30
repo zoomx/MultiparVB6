@@ -1,0 +1,2844 @@
+//***********
+//* Multp12 *
+//***********
+
+//Roberto Maugeri Settembre 2000
+//zoomx@tiscalinet.it
+
+
+//Multp12
+//Adesso nel test si possono usare o la conducibilita' o il ph+temperatura
+//ma la misura e' pero' corretta' poiche' uno dei due e' sempre spento.
+//Vengono soppressi tutti i print nel loop di acquisizione
+//Eliminare tutto quanto riguarda la batteria tampone
+//Ripristinato il controllo livello batteria
+//Nella taratura dei sensori eliminato il ciclo di attesa. Sara'
+//l'interfaccia che se ne occupera'.
+//Aggiunte le routine per la stampa dell'ora attuale e di DFMAX
+
+//Multp11
+//Usare solo programmazione per i fattori batteria
+//Implementati i comandi di accensione e spegnimento linee
+//extern (18 e 19) e INH (20 e 21) per cui nelle routines di
+//taratura questo controllo e' spento.
+
+
+//Multp10
+//Il fattore di moltiplicazione per la batteria viene messo su variabile BattFact!
+//e su UEEPROM
+
+//Multip9
+//Modificata routine senstest, che tiene sempre acceso int 12 e inh della conduc.
+
+
+//Multip8
+//Implementata l'accensione e spegnimento del modem a tempo nella routine
+//di acquisizione LoopAcq:
+//L'orario sta su UUEEPROM ed e' modificabile da menu, routine CambiaOrario:
+// e c'e' un controllo per vedere se l'orario e' umano poco prima di main
+//Aggiunto lo scarico dell'orario di accensione e spegnimento, routine ScaricaOrario:
+//
+
+
+//Multip7
+//Versione con aggiunti dei XMIT- per l'utilizzo con il modem GSM
+//Eliminata la stampa di OKOFF
+
+//Multp6
+//Nel tentativo di eliminare, almeno fino a nuova versione di TFTOOLS,
+//il problema sotto esposto si utilizza una nuova routine di
+//attesa del tempo di campionamento. Praticamente il 68HC11 dorme
+//per intervalli di 30 secondi passati i quali controlla che sia ora
+//di fare misure. Aggiunte variabili Tultima e Tprossima che rappresentano
+//il tempo dell'ultima misura e quello della prossima in secondi.
+//Modifiche per il modem: Inibite molte stampe tramite XMIT-
+//Adesso la linea Extern viene alimentata solamente per
+//le misure, il test e il test batteria
+//Corretto il test sulla batteria mettendo il valore apposito
+//di vBattRif!
+//Adesso memorizza anche la temperatura interna sul 4 e la
+//tensione della batteria
+
+//Multp5
+//Modificate ancora le routine di hyb nel tentativo
+//di rimanere immuni da disturbi
+//Esperimenti non rusciti: Il problema sta nel fatto
+//che se mentre viene eseguita l'istruzione HYB (dopo la PICINT)
+//ci sono dei disturbi sulla linea d'interrupt 16 il PIC
+//diventa sordo agli interrupt fino alla scadenza del
+//tempo dell'HYB
+
+
+//Multp4
+//Derivato da Multp1
+//Modificata uscita da ciclo HYB a causa del fatto che si aveva
+//interruzione al lancio del programma tftools
+//Nella routine dormi non si stampa nulla!
+
+//Multp1
+//Derivato da MH4g
+//Modifiche varie per modello senza tastiera e LCD
+//Cercare //Modifica per modello senza tastiera e LCD
+//Aggiunto il canale I/O INH=17 per controllare l'alimentazione
+//di alcuni sensori e non di altri Quando si misura la
+//conducibilita' gli altri, e particolarmente il Ph, devono
+//essere spenti.
+//Modificata di conseguenza la routine di acquisizione
+
+
+//MH4g
+//Derivato da MH4f
+//Aggiunte le routines che visualizzano continuamente i dati
+//attuali senza memorizzarli
+//Implementato lo scarico di emergenza
+
+
+//MH4f
+//Modificato da MH4gae da Roberto Maugeri Novembre 1999
+//Aggiunte alcune piccole modifiche per il controllo via modem
+//Tali modifiche non sono altro che una o due linee in piu' che
+//contendono il comando cbreak com
+//in modo che il programma di interfaccia sotto windows possa
+//interrompere in qualsiasi momento l'acquisizione
+//E' richiesto il collegamento tra la rs232 e l'ingresso picint
+//Implementato il recupero d'emergenza dei dati
+//Corretto l'errore di data dovuto ad una dimenticanza
+//che impediva di impostare mesi diversi dal 9 e
+//anni diversi dal 1999
+
+//MH4Gae
+//MODIFICATO MH4c da Gaetano Giudice il 21/09/99
+//Inserito lo spegnimento di tutte le uscite del TFX nella routine di 
+//acquisizione principale e nella routine dormi
+//IMPORTANTE!!! Prima di entrare in HYB si DEVE eseguire un PCLR 16,
+//meglio se si esegue PCLR su TUTTE le uscite! (Escluse quelle in uso!)
+//NON eseguire PCLR 16 se la linea e' normalmente alta!
+//Sistemata visualizzazione di Stazione$ su LCD
+
+//MH4c
+//Rispetto alla versione b incluso un controllo batteria dopo
+//ogni misura. E' stata calibrata la routine di misura della
+//tensione batteria
+
+//MH4b
+//Valori a 12 bit invece che a 16!
+//Non vengono utilizzati gli array di stringhe ma la flash
+//non permessi dal TFBasic!!!!!
+//Canali selezionabili singolarmente
+//Modello TattleTale TFX11
+
+//Controllo versione TFBasic
+IF VERS<107
+	PRINT"Versione TFBasic errata ",VERS," invece di 107"
+	STOP
+ENDIF
+
+//Connessioni
+//Nome		TFX11	pin
+
+//Temp0		chan0	A36	1	Temperature
+//Temp1		chan2	A38	2
+//Temp2		chan4	A40	3
+//Temp3		chan6	A42	4
+//Temp4		chan8   A44	5
+//				6,7,8	GND
+
+//Est0		chan1	A37	1	Estensimetri
+//Est1		chan3	A39	2
+//Est2		chan5	A41	3
+//Est3		chan7	A43	4
+//Est4		chan9	A45	5
+//				6	LM385/2.5V
+//				7	12V
+
+//Multi0	io19	B17	Multiplexer Linea di controllo A pin11
+//Multi1	io20	B16	B pin 10
+//Multi2	io21	B15	C pin 9
+//MultiINH	io22	B14	INH pin 6
+//MultiIn	chan10	A46	Multiplexer Linea di lettura analogica pin 3 -> Pin 2 LMC6462 pin 1 ->TFX A46
+
+//				74164	LCD
+//SCLK		io4	A22---->8		LCD Clock comunicazione seriale con 74164
+//RS		io5	A23------------>4	R/S
+//SdoLth	io6	A24------------>6	E SDO-Latch
+//DOUT		io7	A25---->1		SDO-Data dati seriali per 74164
+//GND		gnd	B23---->7------>1	GND
+//5V		5v	B22---->14----->2	5V
+//				3------>7	bit 0
+//				4------>8	bit 1
+//				5------>9	bit 2
+//				6------>10	bit 3
+//				10----->11	bit 4
+//				11----->12	bit 5
+//				12----->13	bit 6
+//				13----->14	bit 7
+//				2->9
+//Sul 74164 collegare il pin 2 (ingresso B) col pin 9
+//Sull'LCD (oppure sul circuito) collegare il pin 5 a massa e collegare un
+//trimmer da 10k con il centrale sul pin 3 e gli altri due su VCC (5V) e GND
+
+
+
+//Stopp		io12	A27	Tasto stop acquisizione
+//Stampa	io13	A28	Tasto stampa su LCD
+//INH		io17	B19
+//Extern	io23	B13	Controllo alimentazione dispositivi esterni
+//ExtModem	io18	B18	Controllo alimentazione modem
+
+//Batt		chan18	A33	Lettura tensione batteria
+
+//Trigger	io16	B20	Trigger
+
+//Connettere VRL (A34) e VRH(A35) rispettivamente a GND e 5V
+//Mettere un condensatore di bypass (p.209)
+
+//ROUTINES
+//InitLcd	Routine inizializzazione dell'LCD
+//OffLcd	Routine spegnomento software LCD
+//OnLcd		Routine accensione software LCD (una volta spento con OffLcd)
+//CmdLcd	Routine di comandi per l'LCD
+//SetCarLcd	Routine posizionamento carattere sull'LCD
+//SetCurLcd	Routine spostamento cursore sull'LCD
+//CurOnLcd	Routine Cursore ON
+//CurOffLcd	Routine Cursore OFF
+//ClrLcd	Routine CLEAR
+//ClrLcd1	Routine Clr prima riga
+//ClrLcd2	Routine Clr seconda riga
+//MsgMblLcd1	Routine messaggio a scorrimento Ia riga
+//MsgMblLcd2	Routine messaggio a scorrimento IIa riga
+//SndMsgLcd1d	Routine messaggio su primariga via DDRAM
+//SndMsgLcd1	Routine messaggio su primariga via comunicazione semplice
+//SndMsgLcd2d	Routine messaggio su secondariga via DRAM
+//SndMsgLcd2	Routine messaggio su secondariga via comunicazione semplice
+//NewChar	Definizione nuovo carattere (c)
+
+//InfoView	Routine visualizzazione Informazioni
+//CheckBat	Routine di misura della tensione della batteria
+//CheckPan	Routine di misura tensione del pannello solare
+//Int2Volt	Routine conversione da binario a volt range 0-5
+//Int2Volt2	Conversione da intero a volt range -2.5 2.5
+//Copyright	Routine di copyright
+//GetTime	Copia le variabili ?() in year, month... e time
+//TestPC	Esegue un test di SimVibro
+//ScarErr	Scarica su RS232 gli eventuali errori memorizzati
+//Errori	Routine gestione errori
+//StopPrg	ferma il programma sul datalogger
+//Dormi		Mette il TFX11 in modalita' basso consumo
+//EraseData	Cancella tutto il datafile nella Flash
+//InfoAcq	Stampa informazioni sulle acquisizioni fatte
+
+
+Debug=1
+
+//VARIABILI GLOBALI
+
+Messaggio$=""		//Messaggio da stampare su una riga
+iBatt=0			//Tensione batteria in binario
+vBatt!=0		//Tensione batteria in Volt
+vBattRif!=10.5		//Tensione minima della batteria
+//BattFact!=2.8
+Intg=0			//Intero generico
+volt!=0			//Tensione generica
+Dati=0			//Numero dati raccolti
+Interval=3600		//Intervallo di campionamento
+MaxDati=15232		//Massimo numero di dati nell'array predefinito @ Pag.70
+DIM Dum1(101)		//Array di dati temporanei per il calcolo delle medie
+BProva=100		//Numero di elementi nei tre array precedenti
+OffX=0			//Offset da calcolare per il canale X
+OffY=0
+OffZ=0
+Spunt=0			//Copia di DFPNT
+RecordBytes=100
+
+
+//**Variabili per la Data e Orario**
+year=1999		//Anno attuale
+month=1			//Mese attuale
+day=1			//Giorno attuale
+hour=0			//Ora attuale
+minute=0		//Minuti attuali
+time$="12:00"		//Ora e minuti attuali
+date$="01/01/1999"	//Data attuale
+seconds=0		//Secondi attuali
+tics=0			//Centesimi di secondi attuali
+Partenza=0		//Data di partenza
+DIM TP(6)		//Data partenza programmata
+Scaricato=0		//I dati sono stati scaricati (1=NON sono stati scaricati)
+Tultima=?		//Tempo ultima acquisizione
+Tprossima=?+100		//Tempo prossima acquisizione
+
+//***LCD**
+Messaggio$=""		//Messaggio da stampare su una riga
+lMessaggio=0		//Lunghezza messaggio
+LcdMsg$=""		//Messaggio di 20 caratteri max da mandare all'LCD
+lLcdMsg=0		//Lunghezza messaggio
+LcsCur=1		//Posizione attuale del cursore dell'LCD
+DIM LcdDram (21)	//Copia della ram dati dell'LCD
+LcdCmd=1		//Comando per l'LCD
+Riga=1			//Riga su cui scrivere il messaggio
+LcdDelay1=2		//Ritardo tra comandi LCD
+Delay1=100		//Ritardo per la visualizzazione
+
+
+//**Hardware**
+Temp0=0			//Canale analogico Temperatura 0
+Temp1=2
+Temp2=4
+Temp3=6
+Temp4=8
+Est0=1			//Canale analogico Estensimetro 0
+Est1=3
+Est2=5
+Est3=7
+Est4=9
+Multi0=19
+Multi1=20
+Multi2=21
+MultiINH=22
+MultiIn=10
+INH=17			//
+Batt=18			//Canale analogico tensione batteria
+
+RS=5			//R/S LCD
+
+Trigger=16		//Linea Trigger
+
+CS=2			//Linea di controllo  MAX550
+SCLK=4
+DOUT=7
+SN=VGET(31)  //PEEK(&HFEDD)*65536+PEEK(&HFEDE)*256+PEEK(&HFEDF)   //Numero di serie
+Stopp=12		//Tasto Stopp o ALT
+pStop=4096		//peso del pin
+Stampa=13		//Tasto Print
+pStampa=8192
+Stampa=9		//Tasto Print
+pStampa=512
+
+Extern=23		//Pin strumentazione esterna
+ExtModem=18	//io18	B18	Controllo alimentazione modem
+
+pTastImp=pStop+pStampa
+
+// Variabili eventualmente incluse nella UEEPROM
+Uinterval=0	//0 Intervallo di campionamento in RATE
+Uarray=1	//1 Puntatore array @
+Uflash=2	//2 Puntatore Flash
+Uerr=3		//3 Codice Errore
+UTempoAcq=4	//4Tempo di acquisizione in secondi
+UTrigLev=5	//5 Trigger
+
+
+
+//Dati utente
+Stazione$="Multipar"	//Nome della Stazione
+CanaleNome$=""
+DIM CanaleNomep(19)	//Nome del Canale
+DIM CanaleAttivo(19)	//Indica se il canale e' attivo o meno
+CanaleUnita$=""
+DIM CanaleUnitap(19)
+DIM CanaleBitmin(19)
+DIM CanaleBitmax(19)
+DIM CanaleValmin!(19)
+DIM CanaleValmax!(19)
+DIM CanaleValoff!(19)
+DIM CanaleADC(19)
+DIM CanaleMisura!(19)
+DIM CanaleVolt!(19)
+DIM CanaleChan(19)
+MaxCanali=17
+
+FOR i = 0 TO 18
+	CanaleNomep(i)=0
+	CanaleAttivo(i)=0
+	CanaleUnitap(i)=0
+	CanaleBitmin(i)=0
+	CanaleBitmax(i)=65535
+	CanaleValmin!(i)=0
+	CanaleValmax!(i)=5
+	CanaleValoff!(i)=0
+	CanaleADC(i)=0
+	CanaleMisura!(i)=0
+	CanaleVolt!(i)=0
+NEXT i
+
+
+FOR i = 0 TO 9
+	CanaleChan(i)=i
+NEXT i
+
+//Selezione corrispondenza tra canali in vb
+//e canali multiplexer
+FOR i = 10 TO MaxCanali
+	CanaleChan(i)=i-10
+NEXT i
+
+//Inversione
+FOR i = 10 TO MaxCanali
+	CanaleChan(i)=7-CanaleChan(i)
+NEXT i
+
+
+//CanaleAttivo(0)=1
+//CanaleAttivo(2)=1
+//CanaleAttivo(13)=1
+
+
+//CanaleChan(0)=0
+//CanaleChan(1)=1
+//CanaleChan(2)=2
+//CanaleChan(3)=3
+//CanaleChan(4)=4
+//CanaleChan(5)=5
+//CanaleChan(6)=6
+//CanaleChan(7)=7
+//CanaleChan(8)=8
+//CanaleChan(9)=9
+
+DIM iTemp(5)		//Ultime temperature valore ADC
+DIM vTemp!(5)		//Ultime temperature in volt
+DIM cTemp!(5)		//Ultime temperature in C
+DIM iEst(5)		//Idem per gli estensimetri
+DIM vEst!(5)
+DIM cEst!(5)
+DIM iClin(5)		//Idem per i clinometri
+DIM vClin!(5)
+DIM cClin!(5)
+
+
+//GOSUB InitLcd			//**Inizializzazione LCD**
+PCLR MultiINH			//Attivazione CD4051
+
+CBREAK Com		//attivazione della routine CTRL+C in caso di segnale da RS232
+
+GOSUB GetTime		//Aggiornamento data
+
+
+//Lettura variabili da UEEPROM
+//Interval=VGET(Uinterval)
+
+
+aOra=VGET(10)		//Prende l'orario di accensione e spegnimento dall'UUEEPROM
+aMinuti=VGET(11)
+sOra=VGET(12)
+sMinuti=VGET(13)
+
+IF aOra<0 | aOra >23		//Controlla che sia corretto
+	aOra=20
+	VSTORE 10,aOra
+ENDIF
+IF sOra<0 | sOra >23
+	sOra=21
+	VSTORE 12, sOra
+ENDIF
+
+IF aMinuti<0 | aMinuti>59
+	aMinuti=0
+	VSTORE 11,aMinuti
+ENDIF
+IF sMinuti<0 | sMinuti>59
+	sMinuti=0
+	VSTORE 13, sMinuti
+ENDIF
+
+//BattFact! = ASFLT(VGET(14))		//Legge il fattore batteria
+//IF BattFact!<1000 | BattFact!>1000	//Controlla che sia corretto
+//	BattFact!=2.8
+//	VSTORE 14, BattFact!
+//ENDIF
+
+
+XMIT+
+//PRINT aOra;
+//PRINT sOra;
+
+ModemOn=1
+PSET ExtModem
+
+
+Errore=0
+ErrCode=0
+//ONERR Errori, ErrCode		//In caso di errore va alla gestione errori
+
+
+//Azzera il byte di oversleep (vedi manuale pag. 120)
+POKE &H9E,0
+
+//Intervallo per l'istruzione sleep 10.0 mS
+//RATE 1
+
+//**********   MAIN   ****************************************************
+
+XMIT-
+
+
+Errore=0
+ErrCode=0
+//ONERR Errori, ErrCode		//In caso di errore va alla gestione errori
+
+
+
+				//**Controllo tensione batteria ed eventuale allarme**
+PSET Extern			//Accensione dispositivi esterni
+GOSUB CheckBat			//Misura tensione batteria
+IF vBatt!<vBattRif!
+	GOSUB InitLcd
+	GOSUB ClrLcd
+	LcdMsg$="Batteria scarica"
+	GOSUB SndMsgLcd1
+	LcdMsg$=STR(#2.2F,vBatt!,"V Sostituire!")
+	GOSUB SndMsgLcd2
+	PRINT"Batteria scarica ",#2.1F,vBatt!
+	GOSUB Dormi	
+	//SLEEP 0
+	//SLEEP 100
+ENDIF
+PCLR Extern
+
+//**************************** Polling sulla tastiera ********************
+PolTast:
+
+PCLR Extern				//Accensione
+PCLR INH
+CBREAK Com
+//GOSUB OnLcd			//Accende LCD
+//GOSUB InitLcd
+//GOSUB ClrLcd
+//SLEEP 0
+//SLEEP Delay1
+//GOSUB GetTime
+//SDO "Comandi "
+//SDO time$
+PolTast2:		//inizio ciclo polling sulla tastiera
+GOSUB GetTime		//Aggiorna l'ora
+//LcdCmd=136	//Mette il cursore a inizio TIME posizione 9
+//GOSUB CmdLcd
+//PRINT time$
+//SDO time$
+//SLEEP 0
+//SLEEP 10
+GOTO PolTast2
+
+TastInp=PIN(Stopp)+PIN(Stampa)
+		//In condizioni normali tutti gli ingressi sono a 1 e quindi
+		//TastInp=4096+8192=12288
+
+
+
+//IF TastInp=pTastImp			//La logica e' negata! quindi tutti i
+
+				//pulsanti sono a 1 se non premuti.
+				//Quindi IF NessunTastoPremuto
+IF TastInp=0			//La logica e'positiva
+
+	GOSUB GetTime		//Aggiorna l'ora
+	//LcdCmd=136	//Mette il cursore a inizio TIME posizione 9
+	//GOSUB CmdLcd
+	//PRINT time$
+	SDO time$
+	SLEEP 0
+	SLEEP 10
+	GOTO PolTast2
+ELSE
+	//PRINT TastInp
+	//SLEEP 0
+	//SLEEP 10	
+	GOTO Tast
+ENDIF
+GOTO PolTast2
+
+//***************************** Attesa comandi da porta seriale ***********
+Com:
+XMIT+
+//GOSUB OnLcd
+//GOSUB ClrLcd
+//SDO "Controllo esterno"
+CBREAK Comandi
+
+
+Comandi:	//Da qui a GOTO Comandi c'e' la routine di attesa comandi
+XMIT+
+tCom=?		//Memorizzazione tempo inizio routine comandi
+//Comando=0
+XMIT+
+PCLR Extern
+PCLR INH
+PRINT"Multipar"
+
+//LcdMsg$="Controllo esterno       "
+//GOSUB SndMsgLcd1
+//LcdMsg$="                        "
+//GOSUB SndMsgLcd2
+
+Comandi2:
+
+//PRINT"1  Acquisizione"
+//PRINT"2  ScaricoDati"
+//PRINT"3  Dormi"
+//PRINT"4  Ultimi dati"
+//PRINT"5  WarmStart"
+//PRINT"6  Torna al controllo da tastiera"
+//PRINT"7  EraseData"
+//PRINT"8  InfoAcq"
+//PRINT"10 Test sensori"
+//PRINT"11 Scarica programmazione"
+//PRINT"12 Tara Ph"
+//PRINT"13 Tara Temperatura"
+//PRINT"14 Tara conducibilita'"
+//PRINT"15 Tara Temperatura interna"
+//PRINT"16 Cambia orario accensione Modem"
+//PRINT"17 Scarica orario accensione modem"
+//PRINT"18 Accensione Extern"
+//PRINT"19 Spegnimento Extern"
+//PRINT"20 Accensione INH"
+//PRINT"21 Spegnimento INH"
+//PRINT"22 lbattfact"
+//PRINT"23 rbattfact"
+//PRINT"24 Scarica orario Centralina"
+//PRINT"25 Scarica quantita' di memoria"
+//PRINT"90 DFPNT"
+//PRINT"93 Test LCD"
+//PRINT"94 TestPC"
+//PRINT"95 XMIT+"
+//PRINT"96 Copyright"
+//PRINT"97 ScarErr"
+//PRINT"98 Scarico Emergenza"
+//PRINT"99 Stop"
+//PRINT
+//PRINT"Comando"
+XMIT-
+INPUT "" Comando // ,1*100
+XMIT+
+
+//IF Comando=0
+//	GOTO Dormi
+//ENDIF
+
+
+//IF ?-tCom>10
+//	GOTO Dormi
+//ENDIF
+
+//Qui si mette l'esecuzione dei vari comandi
+IF Comando=1
+	XMIT-
+	GOTO Acquisizione		// Fa partire l'acquisizione
+	tCom=?
+ENDIF
+IF Comando=2
+	XMIT+
+	GOSUB ScaricoDati		// Scarica i dati
+	tCom=?
+ENDIF
+IF Comando=3
+	XMIT-
+	GOSUB Dormi			// Lo manda in low power mode
+	tCom=?
+ENDIF
+IF Comando=4
+	GOSUB Conversioni
+	GOSUB InfoView			//Controllo su LCD
+	tCom=?
+ENDIF
+IF Comando=5
+	GOSUB WarmStart			//Partenza con dati preprogrammati
+	tCom=?
+ENDIF
+IF Comando=6
+	CBREAK Com			//Torna alla normale gestione di CTRL+C
+	GOSUB PolTast			//Polling Tastiera
+	tCom=?
+ENDIF
+IF Comando=7
+	GOSUB EraseData			//Va alla cancellazione della Flash
+	tCom=?
+ENDIF
+IF Comando=8
+	GOSUB InfoAcq			//Stampa informazioni sulle acquisizioni fatte
+	tCom=?
+ENDIF
+IF Comando=10
+	GOSUB SensTest			//prende la copia di dfnpt (Spunt)
+	tCom=?
+ENDIF
+IF Comando=11
+	GOSUB ScaricoProgrammazione	//Scarica la programmazione eventualmente presente in memoria
+ENDIF
+IF Comando=12
+	GOSUB TaraPh			//Prende una misura di Ph per la taratura
+ENDIF
+IF Comando=13
+	GOSUB TaraTemp			//Prende una misura di temperatura per la taratura
+ENDIF
+IF Comando=14
+	GOSUB TaraCond			//Prende una misura di conducibilita' per la taratura
+ENDIF
+IF Comando=15
+	GOSUB TaraTempInt		//Prende una misura di temperatura interna per la taratura
+ENDIF
+IF Comando=16
+	GOSUB CambiaOrario		//Cambia l'intervallo di accensione del modem
+ENDIF
+IF Comando=17
+	GOSUB ScaricaOrario		//Scarica orario accensione modem
+ENDIF
+IF Comando=18
+	GOSUB ExternOn			//Accensione linea Extern
+ENDIF
+IF Comando=19
+	GOSUB ExternOff			//Spegnimento linea Extern
+ENDIF
+IF Comando=20
+	GOSUB INHOn			//Spegnimento linea INH
+ENDIF
+IF Comando=21
+	GOSUB INHOff			//Spegnimento linea INH
+ENDIF
+IF Comando=22
+	GOSUB lBattFact			//Stampa il fattore batteria
+ENDIF
+IF Comando=23
+	GOSUB rBattFact			//Memorizza il fattore batteria
+ENDIF
+IF Comando=24
+	GOSUB rOrario			//Stampa l'orario centralina
+ENDIF
+IF Comando=25
+	GOSUB rDFMAX			//Stampa la quantita' di memoria
+ENDIF					//totale per i dati nella flash
+
+
+IF Comando=90
+	GOSUB GetDfpnt			//prende la copia di dfnpt (Spunt)
+	tCom=?
+ENDIF
+IF Comando=93
+	GOSUB TestLCD			//Controlli vari mandati al PC
+	tCom=?
+ENDIF
+IF Comando=94
+	GOSUB TestPC			//Controlli vari mandati al PC
+	tCom=?
+ENDIF
+IF Comando=95
+	Xmit+				//Xmit+
+	GOTO Comandi
+	tCom=?
+ENDIF
+IF Comando=96
+	GOSUB Copyright
+	tCom=?
+ENDIF
+IF Comando=97
+	GOSUB ScarErr			// Scarico errori
+	tCom=?
+ENDIF
+IF Comando=98
+	GOSUB Scarico_emergenza	// Scarico di tutto l'array @ in mancanza di puntatore
+	tCom=?
+ENDIF
+IF Comando=99
+	GOTO StopPrg		// Ferma il programma
+ENDIF
+
+Comando=0
+
+GOTO Comandi2
+
+//**************************** Programmazione acquisizione ***************
+Acquisizione:
+//Qui si fa partire l'acquisizione
+//PRINT"Acquisizione"	//***********
+
+XMIT-
+//PRINT "OKOFF"
+
+
+//Acquisizione nome stazione
+
+//INPUT "Stazione ->" Stazione$
+XMIT-
+INPUT "" Stazione$;
+XMIT+
+IF LEN(Stazione$)>32
+	Stazione$=MID(Stazione$,1,32)
+ENDIF
+
+
+//Input data e ora dal PC
+Dummy=0
+//INPUT "Vuoi cambiare l'ora? 1=si, altro=NO" Dummy
+XMIT-
+INPUT "" Dummy;		//INPUT "Vuoi cambiare l'ora? 1=si, altro=NO" Dummy
+XMIT+
+IF Dummy <> 1
+	GOTO Noora
+ENDIF
+
+XMIT-
+INPUT "" ?(5);	//Anno
+INPUT "" ?(4);	//Mese
+INPUT "" ?(3);	//Giorno
+INPUT "" ?(2);	//Ora
+INPUT "" ?(1);	//Minuti
+INPUT "" ?(0);	//Secondi
+XMIT+
+
+//INPUT "Giorno " ?(3);	//Giorno
+//INPUT "Ora " ?(2);	//Ora
+//INPUT "Minuti " ?(1);	//Minuti
+//?(0)=0		//Secondi
+
+STIME		//La scarica in ?
+SETRTC		//Scarica ? sull'orologio del PIC
+Noora:
+READRTC
+RTIME
+
+//PRINT
+//PRINT "Ora Datalogger",?(2),":",?(1),":",?(0);
+//PRINT " del ",?(3),"/",?(4),"/",?(5)
+//PRINT
+
+//Input start time dal PC
+//
+//INPUT "Vuoi partire adesso o ad un ora stabilita (1=Ora stabilita) " Dummy
+XMIT-
+INPUT "" Dummy;
+XMIT+
+IF Dummy=1
+	//Chiede la data di partenza
+	//TP(5)=1999 // Anno				//******
+	//TP(4)=9 // Mese
+	//INPUT "Giorno " TP(3) // Giorno
+	//INPUT "Ora " TP(2) // Ora
+	//INPUT "Minuti " TP(1) // Minuti
+	//TP(0)=0 // Secondi
+	XMIT-
+	INPUT "" TP(5); // Anno
+	INPUT "" TP(4); // Mese
+	INPUT "" TP(3); // Giorno
+	INPUT "" TP(2); // Ora
+	INPUT "" TP(1); // Minuti
+	INPUT "" TP(0); // Secondi
+	XMIT+
+	QuandoPar=0
+ELSE
+
+	FOR i = 0 TO 5				// Copia la data attuale
+		TP(i)=?(i)
+	NEXT i
+	QuandoPar=1
+ENDIF
+
+FOR i = 0 TO 5			//Trasforma la data di partenza in numero
+	?(i)=TP(i)
+NEXT i
+STIME Partenza		// Partenza e' un numero che contiene la data di partenza
+
+
+
+//INPUT "Intervallo di campionamento " Interval		//Input Intervallo dal PC
+XMIT-
+INPUT "" Interval
+XMIT+
+
+//		  1	    2	      3		4
+/////////12345678901234567890123456789012345678901234567890123456
+MsgLcd$="Mlt SIMA S.r.l. Roberto Maugeri (c)1999"
+//Pare che ci siano problemi sul primo blocco di 32 bytes della memoria
+//Flash per cui ci metto una frase di copyright!
+//ATTENZIONE!!!! non cambiare la lunghezza della stringa
+//in MsgLcd!!
+
+STORE MsgLcd$
+
+FOR i = 0 TO MaxCanali
+	//PRINT "Canale ",i
+	//INPUT "Nome Canale" CanaleNome$
+	//CanaleNomep(i)=DFPNT
+	//PRINT DFPNT
+	//IF CanaleNome$="" CanaleNome$=" "
+	//PRINT LEN(CanaleNome$)
+	//STORE CanaleNome$
+	//PRINT DFPNT
+	//INPUT "Attivo (0=inattivo)" CanaleAttivo(i)
+	//STORE #1, CanaleAttivo(i)
+	//INPUT "Unita' di misura" CanaleUnita$
+	//CanaleUnitap(i)=DFPNT
+	//PRINT DFPNT
+	//IF CanaleUnita$="" CanaleUnita$=" "
+	//PRINT LEN(CanaleUnita$)
+	//STORE CanaleUnita$
+	//PRINT DFPNT
+	//INPUT "Bitmin" CanaleBitmin(i)
+	//STORE #4, CanaleBitmin(i)
+	//INPUT "Bitmax" CanaleBitmax(i)
+	//STORE #4, CanaleBitmax(i)
+	//INPUT "Valmin" CanaleValmin!(i)
+	//STORE #4, CanaleValmin!(i)
+	//INPUT "Valmax" CanaleValmax!(i)
+	//STORE #4, CanaleValmax!(i)
+	//INPUT "Offset" CanaleValoff!(i)
+	//STORE #4, CanaleValoff!(i)
+	XMIT-
+	INPUT "" CanaleNome$
+	CanaleNomep(i)=DFPNT
+	IF CanaleNome$="" CanaleNome$=" "
+	STORE CanaleNome$
+	INPUT "" CanaleAttivo(i)
+	STORE #1, CanaleAttivo(i)
+	INPUT "" CanaleUnita$
+	CanaleUnitap(i)=DFPNT
+	IF CanaleUnita$="" CanaleUnita$=" "
+	STORE CanaleUnita$
+	INPUT "" CanaleBitmin(i)
+	STORE #4, CanaleBitmin(i)
+	INPUT "" CanaleBitmax(i)
+	STORE #4, CanaleBitmax(i)
+	INPUT "" CanaleValmin!(i)
+	STORE #4, CanaleValmin!(i)
+	INPUT "" CanaleValmax!(i)
+	STORE #4, CanaleValmax!(i)
+	INPUT "" CanaleValoff!(i)
+	STORE #4, CanaleValoff!(i)
+	XMIT+
+	CanaleADC(i)=0
+	CanaleMisura(i)=0
+	CanaleVolt(i)=0
+	Spunt=DFPNT
+NEXT i
+
+
+XMIT+
+PRINT "PARTITO!"			//Partiamo!
+XMIT-	//Disabilita ogni output sulla RS232
+CBREAK Com
+GOSUB OnLcd
+GOSUB ClrLcd
+SDO "Attesa partenza"
+SLEEP 0
+SLEEP Delay1
+PCLR Extern
+PCLR INH
+//GOSUB OffLcd			//Spegnimento hardware LCD
+Scaricato=1
+Dati=1
+error=0
+SLEEP 0
+HYB 0
+
+//Azzera il byte di oversleep (vedi manuale pag. 120)
+POKE &H9E,0
+
+
+RTIME
+STIME Dummy
+IF QuandoPar=1
+	GOTO IniAcq
+ENDIF
+
+
+AStart=0			//Controllo che si sia raggiunta la data di partenza
+AttesaStart:
+REPEAT
+	RTIME
+        STIME Dummy
+	IF Dummy>=Partenza
+		AStart=1
+	ENDIF
+	PICINT 1,0
+	HYB 0	
+	HYB 5
+	//SLEEP 0
+	//SLEEP 10
+	IF INTSTATE=0
+		//Dummy=PIN(Stopp)	//Controlla che non sia stato il tasto STOP o ALT
+		Dummy=1
+		SLEEP 0
+		SLEEP 50
+		GOTO AttesaStart
+		//IF Dummy<>0
+		//	GOSUB OnLcd		//L'interruzione e' reale
+		//	GOSUB ClrLcd
+		//	//PRINT "Tasto stop "			//*************eliminare!
+		//	//GOTO PolTast
+		//
+		//	GOTO Comandi		//L'interruzione e' reale
+		//ELSE
+		//	GOTO AttesaStart	//E' un falso allarme
+		//ENDIF
+
+	ENDIF
+
+        // controlla ogni 10 secondi che non sia l'ora di partire. Nell'attesa dorme
+UNTIL AStart=1
+
+IniAcq:
+
+SLEEP 0
+GOTO LoopAcq
+
+//****************  Interpretazione comando tastiera  ********************
+Tast:
+//IF TastInp=pTastInp-pStart-pStampa
+//	GOTO WarmStart		//Va alla partenza con dati preprogrammati
+//ENDIF
+//IF TastInp=pTastInp-pStop
+IF TastInp=pStop
+
+	GOTO PolTast		//Non fa niente perche' e' gia' fermo
+ENDIF
+//IF TastInp=pTastInp-pStampa	//Mostra l'ultima acquisizione
+IF TastInp=pStampa	//Mostra l'ultima acquisizione
+	//PRINT "Faccio le conversioni"
+	GOSUB Conversioni		//Campiona la temperatura
+	GOSUB InfoView
+	SLEEP 0
+	SLEEP 150
+	GOTO PolTast		//Torna al polling della tastiera
+ENDIF
+IF TastInp=pTastInp-pStampa-pStop
+	GOSUB TestLCD		//Va al test via LCD
+	GOTO PolTast
+ENDIF
+//IF TastInp=pTastInp-pErase-pAttuale	//Va alla routine cancellazione Flash
+//	GOSUB EraseData		//Campiona la temperatura
+//	GOTO PolTast		//Torna al polling della tastiera
+//ENDIF
+//PRINT"Comando tastiera sconosciuto"		//*******************Da disattivare
+GOTO PolTast			//Torna al polling della tastiera Meglio PolTast2#######
+
+
+//*****************  WarmStart partenza con dati preprogrammati  *********
+WarmStart:
+PRINT "WarmStart"
+
+TP(5) =?(5)
+TP(4) =?(4)
+TP(3) =?(3)
+TP(2) =?(2)
+TP(1) =?(1)
+TP(0) =?(0)
+
+//Interval=VGET(Uinterval)	//Legge intervallo da EEPROM
+Interval=60			//CANCELLA
+PRINT"Interval ",Interval
+
+IF Stazione$=""
+	Stazione$="Vuoto"
+ENDIF
+
+GOTO LoopAcq				//salta al loop di acquisizione
+
+
+
+//*************************** Loop di acquisizione  **********************
+LoopAcq:
+XMIT-
+PSET Extern		//Accensione apparecchiature esterne
+//GOSUB OnLcd		
+//GOSUB ClrLcd
+//SDO "Acquisizione avviata"
+//Aspetta e poi spegne oppure commentare ********
+
+//Azzeramento variabili
+FOR i=0 TO 4
+	iTemp(i)=0		//Ultime temperature valore ADC
+	vTemp!(i)=0		//Ultime temperature in volt
+	cTemp!(i)=0		//Ultime temperature in C
+	iEst(i)=0		//Idem per gli estensimetri
+	vEst!(i)=0
+	cEst!(i)=0
+	iClin(i)=0		//Idem per i clinometri
+	vClin!(i)=0
+	cClin!(i)=0
+NEXT i
+
+iBatt=0			//Tensione batteria in binario
+vBatt!=0		//Tensione batteria in Volt
+Intg=0			//Intero generico
+volt!=0			//Tensione generica
+EPartenza=0		//Data effettiva di partenza
+Scaricato=1
+Dati=0
+Intg=0			//Intero generico
+volt!=0			//Tensione generica
+SLEEP 0
+HYB 0
+
+//Azzera il byte di oversleep (vedi manuale pag. 120)
+POKE &H9E,0
+
+//Registrazione su flash dei dati iniziali
+
+IF MID(Stazione$,LEN(Stazione$),1) < " "    //<32
+	Stazione$=MID(Stazione$,1,LEN(Stazione$)-1)
+ENDIF
+IF LEN(Stazione$)<32
+	Stazione$=Stazione$+"                                   "
+	Stazione$=MID(Stazione$,1,32)
+ENDIF
+
+STORE Stazione$		//Memorizza Stazione$ nella Flash
+//PRINT Stazione$," su Flash"
+
+
+pSN=DFPNT
+
+STORE #4,SN		//Numero di serie nella Flash
+//PRINT "SN ",SN," su Flash"
+
+pTP=DFPNT
+		//Data partenza nella Flash
+STORE #4, TP(5) // Anno
+STORE #4, TP(4) // Mese
+STORE #4, TP(3) // Giorno
+STORE #4, TP(2) // Ora
+STORE #4, TP(1) // Minuti
+STORE #4, TP(0) // Secondi
+
+pInterval=DFPNT
+STORE #4, Interval	//Intervallo di acquisizione in secondi nella Flash
+//PRINT"Interval ",Interval," su Flash"
+
+
+
+
+Spunt=DFPNT
+//PRINT "Puntatore ->",DFPNT
+
+//Azzera il byte di oversleep (vedi manuale pag. 120)
+POKE &H9E,0
+
+//PRINT "Canali attivi"	//Stampa quali canali sono attivi
+FOR i = 0 TO MaxCanali
+	IF CanaleAttivo(i)<>0
+		//PRINT i,", ";
+	ENDIF
+NEXT i
+//PRINT
+
+Tultima=?		//Tempo ultima acquisizione aggiornato
+			//alla prima volta
+Tprossima=Tultima	//Serve solo la prima volta
+
+
+Loop:		//Loop di acquisizione
+
+
+Parti:
+//PRINT"Raccolta dati"
+EventTime = ?		// start time in seconds
+Tultima=Tprossima	//
+	
+// Accende Le apparecchiature esterne
+PSET Extern
+PSET INH
+//Piccola pausa
+//oppure sleep o HYB
+SLEEP 0
+SLEEP 2000
+	
+
+
+//Acquisizione canale 0 Temperatura
+
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(CanaleChan(0))
+NEXT j
+CanaleADC(0)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+
+
+
+//Acquisizione rimanenti canali 2 e 3 Livello e Ph
+FOR i = 2 TO 3
+	Somma=0
+	FOR j = 1 TO BProva
+		Somma=Somma+CHAN(CanaleChan(i))
+	NEXT j
+	CanaleADC(i)=INT(FLOAT(Somma/BProva)+0.5)/16
+	//IF BBPWR<>0 GOTO Dormi
+NEXT i
+
+
+PCLR INH
+
+SLEEP 0
+SLEEP 2000
+
+//Acquisizione Canale 1 Conducibilita'
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(1)
+NEXT j
+CanaleADC(1)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+
+//GOSUB CheckBat		//Misura tensione batteria
+
+//Acquisizione canale 4 Temperatura interna
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(CanaleChan(4))
+NEXT j
+CanaleADC(4)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+			//Memorizzazione delle misure su Flash
+POKE &H9C,0			//Disabilita il CTRL+C
+STORE #2,CanaleADC(0)
+STORE #2,CanaleADC(1)
+STORE #2,CanaleADC(2)
+STORE #2,CanaleADC(3)
+STORE #2,CanaleADC(4)
+STORE #2,iBatt/16		//Memorizza la tensione della batteria
+POKE &H9C,1			//Riabilita il CTRL+C
+
+//PRINT "PH->",CanaleADC(3)
+
+Spunt=DFPNT
+
+
+GOSUB CheckBat			//Controlliamo la batteria principale
+IF vBatt!<vBattRif!
+	PCLR Extern
+	PCLR INH
+	GOTO Dormi
+ENDIF
+
+//Fine acquisizione
+
+PCLR Extern		
+PCLR 0,1,2,3,4,5,6,7,17,19,20,21,22,23	//Spegne tutto TRANNE L'INTERRUPT e il modem (18)
+
+Time2=?
+
+//PRINT"Campionamento effettuato in ",Time2-EventTime," secondi"
+
+
+
+
+Dati=Dati+1
+//PRINT "Puntatore ->",DFPNT
+//PRINT DFMAX
+MemoriaRimasta=DFMAX-DFPNT
+//PRINT MemoriaRimasta
+//Fine (se e' finita la memoria) oppure torna al ciclo di attesa
+IF MemoriaRimasta<RecordBytes
+	//PRINT"Memoria piena"
+	//PRINT"Vado a dormire"
+	GOTO Dormi
+ENDIF
+
+
+
+//Attesa per la prossima misura
+//Toglie un secondo che e' circa il tempo impiegato per la misura
+tempo=Interval
+
+Tprossima=Tultima+Interval	//Calcolo tempo prossima acquisizione
+//PRINT "Tempo ultima misura   -->",Tultima
+//PRINT "Tempo prossima misura -->",Tprossima
+//PRINT "Intervallo -->",Interval
+//PRINT "Differenza -->",Tprossima-Tultima
+
+loop2:
+tempo=30	//Impostazione tempo per HYB
+t0=?
+
+loop1:
+
+//PRINT "Sto per dormire per ",tempo," secondi! ",?
+IF tempo<0 tempo=0
+
+PCLR Extern
+PCLR 0,1,2,3,4,5,6,7,17,19,20,21,22,23	//Spegne tutto 
+
+
+CBREAK Com
+PICINT 1  //,1
+//PRINT "PICINT"
+HYB tempo
+
+
+IF INTSTATE=0
+
+	//PICINT 0
+	//PRINT"Interrupt!"
+	IF ? >= Tprossima
+		GOTO Loop
+	ENDIF
+	//Dummy=PIN(/Stopp)	//Controlla che non sia stato il tasto STOP o ALT
+	Dummy=1
+	IF Dummy<>0
+		//GOSUB OnLcd		//Accensione LCD
+		//GOSUB InitLcd
+		//GOSUB ClrLcd
+		//GOSUB Conversioni
+		SLEEP 0			//Attesa 0.75 secondi
+		SLEEP 75		//Il tasto e' ancora premuto?
+		//Dummy=PIN(Stopp)
+		//Dummy=0
+		//IF Dummy<>0
+		//	//PICINT 0
+		//	GOTO PolTast		//Si vai a controllo tastiera	
+		//ELSE
+			//GOSUB InfoView
+			//GOSUB ClrLcd
+			//GOSUB OffLcd
+			//Alza la linea di interrupt
+			//PSET 16
+			//SLEEP 0
+			//SLEEP 10
+			//La riabbassa
+			//PCLR 16
+			//SLEEP 0
+			//SLEEP 10
+			//Rimette il pin 16 in input
+			//DUMMY=PIN(16)
+			t2=?
+			tempo=30-(t2-t0)
+			//Azzera il contatore dell'HYB
+			HYB 0
+			//Tentativo di sbloccare l'HYB
+			//HYB 1
+			GOTO loop1
+		//ENDIF
+	ENDIF
+	t2=?
+	tempo=Interval-(t2-t0)
+	HYB 0
+	PRINT "INTSTATE"
+	GOTO loop2
+ENDIF
+
+//Controllo che non sia ora di accendere il modem
+// ?(2);	//Ora
+// ?(1);	//Minuti
+
+
+RTIME
+//Siccome il confronto risulta complesso considerando ora e minuti separatamente
+//trasformo l'ora e minuti in ora decimale.
+Now!=?(2)+FLOAT(?(1))/60
+aOrad!=aOra+FLOAT(aMinuti)/60
+sOrad!=sOra+FLOAT(sMinuti)/60
+
+//PRINT
+//PRINT
+//PRINT
+//PRINT "Ora attuale -->",?(2),":",?(1),"   Ora accensione",aOra,":",aMinuti,"  Spegnimento",sOra,":",sMinuti
+//PRINT "Ora attuale -->",Now!,"   Ora accensione",aOrad!,"  Spegnimento",sOrad!
+//PRINT "ModemOn=",ModemOn
+//PRINT "Valore confronto IF-->",?(2)>=aOra & ?(1)>=aMinuti & ?(2)<=sOra & ?(1)<sMinuti
+//PRINT "Valore confronto aOra-->",?(2)>=aOra
+//PRINT "Valore confronto aMinuti-->",?(1)>=aMinuti
+//PRINT "Valore confronto sOra-->",?(2)<=sOra
+//PRINT "Valore confronto sMinuti-->",?(1)<sMinuti
+//IF ?(2)>=aOra & ?(1)>=aMinuti & ?(2)<=sOra & ?(1)<sMinuti
+//PRINT "Valore confronto IF-->",Now!>=aOrad! & Now! < sOrad
+//PRINT "Valore confronto aOrad-->",Now!>=aOrad!
+//PRINT "Valore confronto sOrad-->",Now! < sOrad
+IF Now!>=aOrad! & Now! < sOrad
+	//PRINT "Acceso"
+	IF ModemOn=0
+		//PRINT "PSET MODEM!!!!!!!!!!!!"
+		PSET ExtModem
+		ModemOn=1
+	ENDIF
+ELSE
+// controlla che non sia ora di spegnere
+//IF ?(2)>=sOra &?(1)>=sMinuti
+
+	//PRINT "Spento"
+	IF ModemOn=1
+		PCLR "PCLR MODEM!!!!!!!!!!!!"
+		PCLR ExtModem
+		ModemOn=0
+	ENDIF
+ENDIF
+
+
+
+
+
+//Controllo che non si sia raggiunto il tempo per la prossima misura
+
+IF ?>= Tprossima
+	GOTO Loop
+ELSE
+	PSET Extern
+	//PRINT "Tempo rimanente -->",?-Tprossima
+	GOTO loop2
+ENDIF
+
+//Fine Loop acquisizione
+
+
+//---------------------------------------------------------------------------------------------
+StopAcq:
+
+//Salva il puntatore su UEEPROM posizione 5
+//VSTORE Uflash, DFPNT
+PRINT "Ok"
+GOTO Comandi
+
+//---------------------------------------------------------------------------------------------
+ScaricoDati:
+RTIME
+
+
+//Scrive 40 zeri di sicurezza sulla flash
+//per effettuare il flush del buffer di scrittura
+//FOR i = 1 TO 40
+//	STORE #1,0
+//NEXT i
+XMIT+
+Index=0
+FOR i=0 TO DFPNT-1
+	dummy=GET(Index,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i
+XMIT-
+Scaricato=0
+RETURN
+
+
+//----------------------------------------------------------------------------
+StopPrg:
+//Qui viene fermato il programma sul datalogger
+XMIT+
+PRINT "Programma su Datalogger fermato"
+PRINT "Per ripartire CTRL+R (ASCII 18)"
+//Messaggio$="Programma fermato"
+//GOSUB SndMsgLcd1d	//Routine messaggio su primariga via DDRAM
+STOP
+
+
+//----------------------------------------------------------------------------
+Dormi:
+
+//GOTO Comandi
+
+XMIT-
+//PICINT 1
+//VSTORE Uflash, DFPNT
+
+Dormi2:
+//SLEEP 60
+XMIT-
+PICINT 1,1
+PCLR 0,1,2,3,4,5,6,7,17,19,20,21,22,23
+PCLR Extern
+PCLR INH
+HYB 60
+IF INTSTATE=0
+		Dummy=PIN(Stopp)	//Controlla che non sia stato il tasto STOP o ALT
+		Dummy=1
+	IF Dummy<>0
+		//IF BBPWR<>0 
+			//PRINT "BBPWR ON"
+		//	GOTO Dormi2
+		//ELSE
+			//PRINT "BBPWR OFF"
+		//ENDIF
+		//GOSUB OnLcd		//Accensione LCD
+		//GOSUB InitLcd
+		//GOSUB ClrLcd
+		//GOSUB Conversioni
+		GOSUB InfoView2
+		SLEEP 0			//Attesa .5 secondi
+		SLEEP 50		//Il tasto e' ancora premuto?
+		Dummy=PIN(Stopp)
+		Dummy=0
+		IF Dummy<>0
+			GOTO Comandi		//Si vai a controllo tastiera	
+		ELSE
+			GOSUB OffLcd
+			GOTO Dormi2
+		ENDIF
+	ENDIF
+
+ENDIF
+GOTO Dormi2
+RETURN
+
+//----------------------------------------------------------------------------
+Prova:
+
+PRINT"Lettura corrente. RETURN per continuare, Qualsiasi numero + RETURN per uscire"
+Ciclone:
+SLEEP 0
+//HYB 10
+//Esegue la misura
+
+PRINT "PROVA TRIGGER"
+//RATE 1
+FOR i = 1 to 30
+	PRINT PIN(16)
+NEXT i
+INPUT "RETURN per continuare" dummy	
+
+FOR i = 0 TO BProva
+	Dum1(i)=CHAN(0)
+	//Dum2(i)=CHAN(1)
+	//Dum3(i)=CHAN(2)
+	SLEEP 1
+NEXT i
+
+FOR i = 0 TO BProva
+	PRINT Dum1(i)  //,", ",Dum2(i),", ",Dum3(i)
+NEXT i
+
+INPUT "Continuo? 0=OK" Dummye$
+Dummy=IVAL(Dummye$)
+IF Dummy = 0
+	GOTO Ciclone
+ENDIF
+RETURN
+
+
+
+//----------------------------------------------------------------------------
+Scarico_emergenza:
+
+RTIME
+//PRINT "SimVibro"
+//PRINT "Ora Datalogger",?(2),":",?(1),":",?(0);
+//PRINT " del ",?(3),"/",?(4),"/",?(5)
+//PRINT
+//PRINT "Scarico dati di emergenza"
+
+XMIT-
+INPUT "" Dati
+XMIT+
+Index=0
+FOR i=0 TO Dati
+	dummy=GET(Index,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i
+
+
+RETURN
+
+//----------------------------------------------------------------------------
+Copyright2:
+PRINT""
+PRINT"Multipar"
+PRINT
+PRINT"Program by Roberto Maugeri 1999"
+RTIME
+PRINT "Ora datalogger ",?(2),":",?(1),":",?(0);
+PRINT " del ",?(3),"/",?(4),"/",?(5)
+PRINT
+RETURN
+
+
+
+//-------------------------------------------------------
+//Sub Int2Volt		Conversione da intero a volt range 0-5
+Int2Volt:
+//Il dato da convertire e' in Intg e quello convertito in volt!
+volt!=5.0/65535.0*FLOAT(Intg)
+RETURN
+
+//-------------------------------------------------------
+//Sub Int2Volt2		Conversione da intero a volt range -2.5 2.5
+Int2Volt2:
+//Il dato da convertire e' in Intg e quello convertito in volt!
+volt!=5.0/65535.0*FLOAT(Intg)
+volt!=volt!-2.5
+RETURN
+
+
+//-------------------------------------------------------
+//Sub CheckBat  		Controllo tensione batteria
+CheckBat:
+//PSET Extern
+iBatt=CHAN(Batt)
+vBatt!=5.0/65535.0*FLOAT(iBatt)
+//Conversione per effettiva tensione
+vBatt!=vBatt!*BattFact!				//*****************************modificare!
+//PCLR Extern
+RETURN
+
+//-------------------------------------------------------
+//Sub CheckPan		Controllo tensione pannello solare
+CheckPan:
+vPann!=19.3
+RETURN		//Eliminare per attivare la lettura tensione del pannello
+iPann=CHAN(Pann)
+vPann!=5.0/65535.0*FLOAT(iPann)
+RETURN
+
+//-------------------------------------------------------
+//SubGetTime	Copia le variabili ?() in year, month..., time$ e date$
+//In time$ il formato e' sempre a 2 cifre.
+GetTime:
+READRTC
+RTIME
+year=?(5)		//Anno attuale
+month=?(4)		//Mese attuale
+day=?(3)		//Giorno attuale
+hour=?(2)		//Ora attuale
+minute=?(1)		//Minuti attuali
+seconds=?(0)		//Secondi attuali
+tics=?(6)		//Centesimi di secondi attuali
+time$=STR(hour,":",minute,":",seconds)	//Ora, minuti e secondi attuali
+//PRINT "Conversione data"
+//PRINT seconds, " ",?(0)
+//PRINT time$
+//Conversione data da possibile h:m:s in hh:mm:ss
+//padding con zero iniziale se la cifra e' singola
+//Queste istruzioni sono necessarie in quanto se
+//i minuti sono meno di dieci viene restituita una sola cifra
+//e l'ora appare tipo 23:2:45
+IF hour<10
+	time$=STR("0",time$)
+ENDIF
+//PRINT time$
+IF minute<10
+	time$=STR(MID(time$,1,3),"0",MID(time$,4,10))
+ENDIF
+//PRINT time$
+IF seconds<10
+	time$=STR(MID(time$,1,6),"0",seconds)
+ENDIF
+//PRINT time$
+date$=STR(day,"/",month,"/",year,"   ")
+//Adattamento data con padding di zeri se necessari
+IF day<10
+	date$=STR("0",date$)
+ENDIF
+//PRINT date$
+IF month<10
+	date$=STR(MID(date$,1,3),"0",MID(date$,4,15))
+ENDIF
+//PRINT date$
+RETURN
+
+//-------------------------------------------------------
+
+InfoAcq:		//Stampa informazioni sulle acquisizioni fatte
+//PRINT "DFPNT=",DFPNT
+PRINT DFPNT
+PSET Extern
+GOSUB CheckBat			//Misura tensione batteria
+PCLR Extern
+PRINT #2.2F,vBatt!
+PRINT SN
+RETURN
+
+//-------------------------------------------------------
+sbagghiu:
+Errn= Errore1/65536
+IF Errn=45
+	PRINT "ERRORE!!!!--->",Errore1
+	PRINT "Errore #", Errore1/65536," at ",Errore1%65536
+	PRINT "Indice = ",i," ",i
+	PRINT "DFPNT= ",DFPNT
+	PRINT "DummX=",DummX," ",ix
+	PRINT "DummY=",DummY," ",iy
+	PRINT "DummZ=",DummZ," ",iz
+	IF ix=0
+		//GOTO StoX
+	ENDIF
+	IF iy=0
+		//GOTO StoY
+	ENDIF
+	IF iz=0
+		//GOTO StoZ
+	ENDIF
+	STOP
+
+ELSE
+	PRINT "ERRORE!!!!--->",Errore1
+	PRINT "Errore #", Errore1/65536," at ",Errore1%65536
+	PRINT "Indice = ",i," ",i
+	PRINT "DFPNT= ",DFPNT
+	PRINT "DummX=",DummX," ",ix
+	PRINT "DummY=",DummY," ",iy
+	PRINT "DummZ=",DummZ," ",iz
+
+	STOP
+ENDIF
+
+//-------------------------------------------------------
+//Sub Test
+Test:
+READRTC
+RTIME
+PRINT
+PRINT
+PRINT"Multipar"
+PRINT
+PRINT"Program by Roberto Maugeri 1999"
+RTIME
+PRINT "Ora datalogger ",?(2),":",?(1),":",?(0);
+PRINT " del ",?(3),"/",?(4),"/",?(5)
+PRINT
+PRINT
+PRINT "Canale 0 X----------->",CHAN(0)
+PRINT "Canale 1 Y----------->",CHAN(1)
+PRINT "Canale 2 Z----------->",CHAN(2)
+PRINT "Canale 3 Batteria---->",CHAN(3)
+PRINT "Canale 4 Pannello---->",CHAN(4)
+PRINT "Trigger-------------->",PIN(Trigger)
+PRINT "Stop----------------->",PIN(Stopp)
+PRINT
+PRINT
+RETURN
+
+//-------------------------------------------------------
+//Sub InfoView
+InfoView:
+RETURN		//Modifica per modello senza tastiera e LCD
+//Visualizza lo stato del datalogger
+//Da qui, premendo contemporaneamente due pulsanti che
+//si sceglieranno si potra' entrare nel menu' segreto
+//Messaggio da visualizzare
+//12345678901234567890
+//--------------------
+//hh:mm XXXmm XX.XoC
+//B vv.vV
+READRTC
+RTIME
+
+hour=?(2)
+minute=?(1)
+IF hour<10				//Padding ore e minuti con zeri se<10
+	LcdMsg$=STR("0",hour,":")
+ELSE
+	LcdMsg$=STR(hour,":")
+ENDIF
+IF minute<10
+	LcdMsg$=STR(LcdMsg$,"0",minute," ")
+ELSE
+	LcdMsg$=STR(LcdMsg$,minute," ")
+ENDIF
+//LcdMsg$=LcdMsg+" Multipar"
+LcdMsg$=LcdMsg+" "+Stazione$
+GOSUB SndMsgLcd1
+GOSUB CheckBat
+//GOSUB CheckPan
+//LcdMsg$=STR("B ",#2.1F,vBatt!," P",vPann,"V")	//Versione con tensione pannello solare
+LcdMsg$=STR(#2.1F,vBatt!,"V ",#6D,Dati)
+GOSUB SndMsgLcd2
+
+//LcdCmd=128	//Mette il cursore a inizio
+//GOSUB CmdLcd
+
+
+T1=?
+T2=T1+9		//Setta il timeout in secondi
+REPEAT
+	Dummy=PIN(Stampa)
+	SLEEP 0
+	SLEEP 10
+	HYB 0
+
+	//PRINT Dummy," ",?," ",T2
+UNTIL Dummy<>0 | ?>T2	//Finche' non si preme un tasto o timeout
+IF Dummy=0		//Non e' stato premuto nessun tasto
+	PRINT "Nessun tasto ->Dummy=",Dummy," ",?," ",T2," ",T1
+	RETURN
+ENDIF
+GOSUB Conversioni
+FOR i=0 TO MaxCanali
+	IF CanaleAttivo(i)<>0
+		punt=CanaleNomep(i)
+		//PRINT "Puntatore->",punt
+		Intg=punt
+		GOSUB GETS2
+		CanaleNome$=GETS2s$
+		//CanaleNome$=GETS(punt)
+		PRINT CanaleNome$," ",LEN(CanaleNome$)
+		LcdMsg$=STR("CH",#2D,i," ",CanaleNome$,"                ")
+		LcdMsg$=STR("CH",i)+" "+CanaleNome$+"                "
+		//LcdMsg$=STR(#2D,i)
+		PRINT "LcdMsg=           ",LcdMsg$
+		punt=CanaleUnitap(i)
+		//PRINT Punt
+		Intg=punt
+		GOSUB GETS2
+		CanaleUnita$=GETS2s$
+		//CanaleUnita$=GETS(punt)
+		PRINT CanaleUnita$," ",LEN(CanaleUnita$)
+		GOSUB SndMsgLcd1
+		LcdMsg$=STR(#3.2F,CanaleMisura!(i)," ",CanaleUnita$,"           ")
+		LcdMsg$=STR(#3.2F,CanaleMisura!(i))+" "+CanaleUnita$+"           "
+		PRINT "LcdMsg=            ",LcdMsg$
+		GOSUB SndMsgLcd2
+		T1=?
+		T2=T1+9		//Setta il timeout in secondi
+		
+		REPEAT
+			Dummy=PIN(Stampa)
+			SLEEP 0
+			SLEEP 10
+			HYB 0
+			PRINT "Repeat"
+		UNTIL Dummy<>0 | ?>T2	//Finche' non si preme un tasto o timeout
+		IF Dummy=0		//Non e' stato premuto nessun tasto
+			RETURN
+		ENDIF
+	ENDIF
+
+NEXT i
+PRINT
+PRINT "Informazione sui canali stampate!"
+PRINT
+RETURN
+
+
+//-------------------------------------------------------
+//Sub InitLcd
+InitLcd:
+RETURN		//Modifica per modello senza tastiera e LCD
+PCLR RS
+SLEEP 0
+SLEEP LcdDelay1
+//00111000
+//0,0,Function set, Data lenght (1=8, 0=4),Lines (1=2 0=1),Char set (1=5x10 0=5x7), 0, 0
+SDO 56,8
+SDO 56,8
+//SDO \6,\12,\1;
+//00000110
+//00000,Entry set,Cursor I/D (1=Increment 0=Decrement), 1=with display shift 0=without
+SDO 6,8
+SLEEP 0
+SLEEP LcdDelay1
+//00001100
+//0000,Display on off control,1=Display on 0=Display off,1=Cursor on 0=Cursor off, 1=cursor blink on
+// 0=cursor blink off
+SDO 12,8
+SLEEP 0
+SLEEP LcdDelay1
+//Clear display
+SDO 1,8
+PSET RS
+SLEEP 0
+SLEEP LcdDelay1
+//0000,cursor/Display shift, 1=Display shift 0=Cursor movement, 1=shift to the right
+// 0=shift to the left,00
+GOSUB NewChar
+RETURN
+
+//-------------------------------------------------------
+//sub ClrLcd		Routine CLEAR LCD
+ClrLcd:
+RETURN		//Modifica per modello senza tastiera e LCD
+LcdCmd=1
+GOSUB CmdLcd
+RETURN
+
+
+//-------------------------------------------------------
+//Sub OffLcd		Routine spegnimento software LCD
+OffLcd:
+RETURN		//Modifica per modello senza tastiera e LCD
+//LcdCmd=8
+//GOSUB CmdLcd
+PCLR Extern
+PCLR RS
+RETURN
+
+//-------------------------------------------------------
+//Sub OnLcd		Routine accensione software LCD
+OnLcd:
+RETURN		//Modifica per modello senza tastiera e LCD
+PSET Extern
+PSET RS
+GOSUB InitLcd
+//LcdCmd=12
+//GOSUB CmdLcd
+RETURN
+
+//-------------------------------------------------------
+//Sub CmdLcd		Routine di comandi per l'LCD
+CmdLcd:
+PCLR RS
+SLEEP 0
+SLEEP LcdDelay1
+SDO LcdCmd,8
+PSET RS
+SLEEP 0
+SLEEP LcdDelay1
+RETURN
+
+//11000000 indirizzo seconda riga
+//10000000 indirizzo prima riga
+
+//-------------------------------------------------------
+//Sub SndMsgLcd1	Routine messaggio su primariga via comunicazione semplice
+SndMsgLcd1:
+//Manda il messaggio contenuto in LcdMsg$
+LcdCmd=128
+GOSUB CmdLcd
+LcdMsg$=MID(LcdMsg$,1,20)
+SDO LcdMsg$
+SLEEP 0
+SLEEP LcdDelay1
+RETURN
+
+//-------------------------------------------------------
+//Sub SndMsgLcd2	Routine messaggio su secondariga via comunicazione semplice
+SndMsgLcd2:
+//Manda il messaggio contenuto in LcdMsg$
+LcdCmd=192
+GOSUB CmdLcd
+LcdMsg$=MID(LcdMsg$,1,20)
+SDO LcdMsg$
+SLEEP 0
+SLEEP LcdDelay1
+RETURN
+
+//-------------------------------------------------------
+//Sub Copyright
+Copyright:
+//Messaggio a scorrimento
+GOSUB NewChar		//Definisce il simbolo di CopyRight
+Messaggio$=STR("   ",\0,"Roberto Maugeri 1999 zoom7@freemail.it ")
+PRINT Messaggio$
+GOSUB ClrLcd
+GOSUB MsgMblLcd1
+SLEEP 0
+SLEEP 500
+GOSUB InfoView
+RETURN
+
+//-------------------------------------------------------
+//Sub MsgMblLcd
+MsgMblLcd:
+//Messaggio mobile su Lcd riga
+
+//Variabili usate
+//mmi  indice intero
+//mmi2 indice intero
+
+//Variabili d'ingresso
+//Messaggio$	il messaggio da spedire
+
+//Variabili modificate
+//lMessaggio, LcdMsg$, lLcdMsg$
+
+//Richiama SndMsgLcd oppure SndMsgLcd1 o SndMsgLcd2
+
+IF Debug
+	Messaggio$="Forse funziona 12345"
+ENDIF
+lMessaggio=LEN(Messaggio$)
+PRINT (Messaggio$)
+FOR mmi=1 TO lMessaggio
+	LcdMsg$=MID(Messaggio$,mmi,20)
+	lLcdMsg=LEN(LcdMsg$)
+	IF lLcdMsg=0
+		RETURN
+	ENDIF
+					//Padding con spazi fino a 20 caratteri
+					//serve perche' il messaggio alla fine diverra' via
+					//via piu' corto.
+	IF lLcdMsg<20
+		FOR mmi2=1 TO 20-lLcdMsg
+			LcdMsg$=LcdMsg$+" "
+		NEXT mmi2
+	ENDIF
+	IF Debug
+		IF LEN(LcdMsg$)<20
+			PRINT LEN (LcdMsg$)
+			PRINT "Errore"
+			STOP
+		ENDIF
+	ENDIF
+					//Manda il messaggio all'LCD
+	IF Riga=1
+		GOSUB SndMsgLcd1
+	ELSE
+		GOSUB SndMsgLcd2
+	ENDIF
+NEXT mmi
+RETURN
+
+
+//-------------------------------------------------------
+//Sub MsgMblLcd2
+MsgMblLcd2:
+//Messaggio mobile su Lcd riga 2
+//Utilizza la stessa routine MsgMblLcd ma con riga posta a 2
+Riga=2
+GOSUB MsgMblLcd
+RETURN
+
+//-------------------------------------------------------
+//Sub MsgMblLcd1
+MsgMblLcd1:
+//Messaggio mobile su Lcd riga 1
+//Utilizza la stessa routine MsgMblLcd ma con riga posta a 1
+Riga=1
+GOSUB MsgMblLcd
+RETURN
+
+
+//-------------------------------------------------------
+//Sub NewChar		Definizione nuovo carattere
+NewChar:
+//Definizione nuovo carattere
+// 12345
+//1 ***
+//2* * *
+//3**  *
+//4**  *
+//5* * *
+//6 ***
+//7
+DIM Charb(7)
+		// 76543210
+Charb(0)=14	//0xxx01110
+Charb(1)=21	//1xxx10101
+Charb(2)=25	//2xxx11001
+Charb(3)=25	//3xxx11001
+Charb(4)=21	//4xxx10101
+Charb(5)=14	//5xxx01110
+Charb(6)=0	//6xxx00000
+
+LcdCmd=64
+GOSUB CmdLcd
+FOR Nwci= 0 to 6
+	SDO Charb(Nwci),8
+NEXT Nwci
+LcdCmd=128
+GOSUB CmdLcd
+RETURN
+
+
+
+//-------------------------------------------------------
+Errori:				//Routine gestione errori
+XMIT+
+Errore=ErrCode
+PRINT "Errore ",ErrCode
+PRINT "Errore ",Errore/65536," alla linea ", Errore%65536
+GOSUB ClrLcd
+LcdMsg$=STR("Err",Errore/65536," ",Errore%65536)
+GOSUB SndMsgLcd1
+LcdMsg$="Chiamare assistenza"
+GOSUB SndMsgLcd2
+//GOTO Dormi
+GOTO Comandi
+
+//-------------------------------------------------------
+ScarErr:		//Scarica su RS232 gli eventuali errori memorizzati
+XMIT+
+IF Errore <>0
+	PRINT "Errore ",Errore/65536," alla linea ", Errore%65536
+ELSE
+	PRINT "Nessun errore memorizzato"
+ENDIF
+Errore=0
+RETURN
+
+//----------------------------------------------------------------------------------------
+TestPC:		//Esegue un test di Multipar con uscita su RS232
+PRINT""
+PRINT"Multipar"
+PRINT
+PRINT"Program by Roberto Maugeri Dicembre 1999"
+PRINT"zoom7@freemail.it"
+RTIME
+PRINT "Ora datalogger ",?(2),":",?(1),":",?(0);
+PRINT " del ",?(3),"/",?(4),"/",?(5)
+PRINT "TFX Modello ", MODEL/100
+PRINT "Numero di serie -->", SN
+PRINT "TFBASIC versione -->", #1.2F,FLOAT(VERS/100)
+PRINT "Baud rate corrente ",BAUDGET
+PRINT "Errori matematici =",FPERR
+IF BBPWR = 0
+	PRINT "Alimentazione esterna"
+ELSE
+	PRINT "Alimentazione batteria di backup"
+ENDIF
+
+PRINT "Baudrate in ram ", PEEK(43)
+PRINT "MC68HC11 Options ",#08B,PEEK(57)
+PRINT "Oversleep ",#08B,PEEK(158)
+PRINT "Errori partenza programma ",#08B,PEEK(160)
+
+PRINT "Nella serial Flash ci sono ",DFMAX," bytes"
+PRINT "Prossima locazione disponibile ",DFPNT
+PRINT
+PRINT
+PRINT
+INPUT "Un tasto per continuare 3 per andare alla calibrazione sensori" dummy
+IF dummy = 3
+	GOTO CalSens
+ENDIF
+PRINT
+PRINT
+PRINT "Configurazione porte"
+PRINT
+PRINT "Configurazione PIN 0-7 (Port C) ",#08B,PEEK(7)
+PRINT "Configurazione Port A ",#08B,PEEK(1)
+PRINT "Configurazione Port D ",#08B,PEEK(9)
+PRINT "Configurazione Port G ",#08B,PEEK(3)
+PRINT "Stato delle porte"
+PRINT "Porta A ",#08B,PEEK(0)
+PRINT "Porta B ",#08B,PEEK(4)
+PRINT "Porta C ",#08B,PEEK(6)," Pin 0-7"
+PRINT "Porta D ",#08B,PEEK(8)
+PRINT "Porta E ",#08B,PEEK(10)," Pin 8-15 AD11-18"
+PRINT "Porta F ",#08B,PEEK(5)
+PRINT "Porta G ",#08B,PEEK(2)
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+INPUT "Un tasto per continuare" dummy
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT "Letture attuali canali analogici a 12 bit"
+PRINT
+PRINT"Chan0  Chan1  Chan2  Chan3  Chan4  Chan5  Chan6  Chan7  Chan8  Chan9  Chan10"
+PRINT #06D,Chan(0)," ",Chan(1)," ",Chan(2)," ",Chan(3)," ";
+PRINT #06D,Chan(4)," ",Chan(5)," ",Chan(6)," ",Chan(7)," ";
+PRINT #06D,Chan(8)," ",Chan(9)," ",Chan(10)
+PRINT
+PRINT
+PRINT "Letture attuali canali analogici a 8 bit"
+PRINT
+PRINT"Chan11 Chan12 Chan13 Chan14 Chan15 Chan16 Chan17 Chan18"
+PRINT #06D,Chan(11)," ",Chan(12)," ",Chan(13)," ",Chan(14)," ";
+PRINT #06D,Chan(15)," ",Chan(16)," ",Chan(17)," ",Chan(18)
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+INPUT "Un tasto per continuare" dummy
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT "Letture sulle porte d'ingresso"
+FOR i = 0 to 13
+	PRINT "Pin ",i," ",pin(i)
+NEXT i	
+PRINT "Pin 16 ",pin(16)
+PRINT
+PRINT
+PRINT
+PRINT
+INPUT "Un tasto per continuare" dummy
+PRINT
+PRINT
+PRINT
+PRINT "Valori registrati in UEPROM"
+FOR i=0 to 15
+	Eprom=VGET(i)
+	PRINT "UEEPROM n.",i," ",Eprom
+NEXT i
+PRINT
+PRINT
+INPUT "Un tasto per continuare" dummy
+PRINT
+PRINT
+FOR i=15 to 31
+	Eprom=VGET(i)
+	PRINT "UEEPROM n.",i," ",Eprom
+NEXT i
+PRINT
+PRINT
+INPUT "Un tasto per continuare" dummy
+PRINT
+PRINT
+CalSens:
+PRINT "Calibrazione sensore temperatura"
+PSET Extern
+PRINT
+PRINT
+cTempAtt:
+iTempAtt=CHAN(Temp1)
+vTempAtt!=5.0/65535.0*iTempAtt
+TempAtt!=(vTempAtt!-2.50)*100
+PRINT "Temperatura ",iTempAtt," ",#3.4F,vTempAtt!," ",TempAtt!," ";
+INPUT "3 per continuare"  dummy,#1
+IF dummy=3
+	GOTO cTempAtt
+ENDIF
+
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT "Calibrazione tensione batteria"
+PRINT
+PRINT
+cBatt:
+iBatt=CHAN(Batt)
+vBatt!=5.0/65535.0*FLOAT(iBatt)
+vBatt!=vBatt!*2.706
+PRINT "Batteria ",iBatt," ",#2.4F,vBatt!," ";
+INPUT "3 per continuare" dummy, #1
+IF dummy=3
+	GOTO cBatt
+ENDIF
+
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT "Controllo pulsantiera"
+PRINT
+PRINT
+cpuls:
+PRINT PIN(Stopp)," ",PIN(Stampa)," ",PIN(9)," ",PIN(Trigger)
+INPUT "3 per continuare" dummy, #1
+IF dummy=3
+	GOTO cpuls
+ENDIF
+
+
+
+PCLR Extern
+
+RETURN
+
+
+//-------------------------------------------------------
+WaitStart:
+//Aspetta la pressione del tasto Start
+IF PIN(Stampa)<>0
+	GOTO WaitStart
+ENDIF
+RETURN
+
+
+//----------------------------------------------------------------------------------------
+TestLCD:	//Esegue un test di Multipar e mostra i risultati sull'LCD
+GOSUB OnLcd
+GOSUB InitLcd
+GOSUB ClrLcd
+LcdMsg$="Multipar"
+GOSUB SndMsgLcd1
+LcdMsg$=STR(\0," R. Maugeri 1999")
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+LcdMsg$=STR("N. serie ",SN)
+GOSUB SndMsgLcd1
+LcdMsg$="Premi Ent"
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+GOSUB GetTime
+LcdMsg$=STR("Data ",date$)
+GOSUB SndMsgLcd1
+LcdMsg$=STR("Ora ",time$)
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+//       12345678901234567890
+LcdMsg$="Annotare se la data"
+GOSUB SndMsgLcd1
+LcdMsg$="e' errata"
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+//       12345678901234567890
+LcdMsg$=STR("ErrMat ",FPERR)
+GOSUB SndMsgLcd1
+IF BBPWR = 0
+	LcdMsg$="Alim. Esterna"
+ELSE
+	LcdMsg$="Alim. Backup"
+ENDIF
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+LcdMsg$=STR("Flash ",DFMAX)
+GOSUB SndMsgLcd1
+LcdMsg$=STR("Prox ",DFPNT)
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+LcdMsg$=STR("StartErrs ",#08B,PEEK(160))
+GOSUB SndMsgLcd1
+Errore=ErrCode
+LcdMsg$=STR("Err",Errore/65536," ",Errore%65536)
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+LcdMsg$=STR("Ueeprom 0 ",VGET(0))
+GOSUB SndMsgLcd1
+LcdMsg$=STR("Ueeprom 1 ",VGET(1))
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+LcdMsg$=STR("Interval ",Interval)
+GOSUB SndMsgLcd1
+LcdMsg$=STR("ShutDown ",ShutDown)
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+GOSUB ClrLcd
+//PCLR Extern
+LcdMsg$="Prova consumi"
+GOSUB SndMsgLcd1
+LcdMsg$="Premi ENT"
+GOSUB SndMsgLcd2
+GOSUB WaitStart
+
+PCLR Extern
+GOSUB OffLcd
+HYB 0
+HYB 5
+SLEEP 100
+GOSUB OnLcd
+GOSUB InitLcd
+
+GOSUB ClrLcd
+//PSET Extern
+SLEEP 85
+Tchan:
+LcdMsg$=STR("Temp ",CHAN(Temp0))
+GOSUB SndMsgLcd1
+LcdMsg$=STR("Batt ",CHAN(Batt))
+GOSUB SndMsgLcd2
+TastInp=PIN(Stopp)		//Attesa premuta tasto stop o Alt
+IF PIN(Stopp)<>0			//E' il tasto STOP o ALT?
+	//PCLR Extern
+	RETURN			//Si, torna al polling tastiera
+ENDIF
+GOTO Tchan
+
+GOSUB WaitStart
+RETURN
+
+//-------------------------------------------------------
+EraseData:
+//Cancella tutto il datafile nella Flash
+
+//Modifica per modello senza tastiera e LCD
+//GOSUB ClrLcd
+//LcdMsg$="Cancello memoria?"
+//GOSUB SndMsgLcd1
+//LcdMsg$="PRINT = SI!"
+//GOSUB SndMsgLcd2
+//REPEAT
+//UNTIL PIN(Stampa)<>0 | PIN (Stopp)<>0
+//IF PIN(Stopp)<>0		//NON e' il tasto Start?
+//	GOTO PolTast		//Si, torna al polling tastiera
+//ENDIF
+
+TFErr = 0               // used to signal error (non-zero if error)
+
+asm $
+SelEE   equ     H'FD8B  ; function to select flash EEPROM
+SelNone equ     H'FD8E  ; function to unselect flash EEPROM
+EEErase equ     H'FD85  ; function to erase a block of flash EEPROM
+EEWEnab equ     H'CAF1  ; function to write enable flash EEPROM
+EEWDis  equ     H'CAFD  ; function to write disable flash EEPROM
+DFBlks  equ     H'13B   ; address of list of datafile blocks
+
+        jsr     SelEE   ; select flash on SPI bus
+        jsr     EEWEnab ; write enable flash (needed for erasing, too)
+        ldx     #DFBlks ; X register holds address of datafile blocks
+_EEClr  ldab    0,x     ; load next datafile block # in B register
+        cmpb    #H'FF   ; check if this is end of list
+        beq     _xeec   ; branch to _xeec if this is end of list
+        jsr     EEErase ; erase the flash block whose # is in B reg
+        bvs     _eecerr ; branch if time-out error on erase
+        bcs     _eecerr ; branch if block did not erase
+        inx             ; point to next position in datafile block list
+        bra     _EEClr  ; loop back to do this block
+_xeec   jsr     EEWDis  ; write disable flash EEPROM
+        jsr     SelNone ; deselect flash EEPROM on SPI bus
+        rts
+_eecerr inc     TFErr+3 ; here if error, make value non-zero
+        bra     _xeec   ; finish up as normal
+        end
+
+IF TFErr = 0
+        		//OK
+        POKE &hB0,0     // clear the datafile pointer
+        POKE &hB1,0
+        POKE &hB2,0
+        POKE &hB3,0
+	GOSUB ClrLcd
+	LcdMsg$="Memoria cancellata"
+	GOSUB SndMsgLcd1
+	LcdMsg$="Premere il reset"
+	GOSUB SndMsgLcd2
+	STOP
+ELSE      
+	LcdMsg$="Cancellazione fallita"		//No good
+	GOSUB SndMsgLcd1
+	LcdMsg$="Riprovare"
+	GOSUB SndMsgLcd2
+	SLEEP 0
+	SLEEP 200
+	RETURN
+ENDIF
+STOP
+
+
+//-------------------------------------------------------
+MultiSelect:		//Seleziona il canale corretto sul Multiplexer
+//Var in ingresso Intg contiene il canale da selezionare
+//Var utilizzate Multi0-Multi3 sono i canali ove si effettua la selezione
+//Intg conterra' 0 se l'operazione e' stata eseguita, altrimenti il
+//valore in ingresso.
+IF Intg & 1
+	PSET(Multi0)
+ELSE
+	PCLR(Multi0)
+ENDIF
+IF Intg & 2
+	PSET(Multi1)
+ELSE
+	PCLR(Multi1)
+ENDIF
+IF Intg & 4
+	PSET(Multi2)
+ELSE
+	PCLR(Multi2)
+ENDIF
+//Intg=0
+RETURN
+
+//-------------------------------------------------------
+Conversioni:			//Converte i valori misurati nelle grandezze effettive
+FOR i=0 TO MaxCanali
+CanaleMisura!(i)=FLOAT((CanaleADC(i)-CanaleBitmin(i)))/FLOAT((CanaleBitmax(i)-CanaleBitmin(i)))*(CanaleValmax(i)-CanaleValmin(i))+CanaleValmin(i)+CanaleValoff(i)
+NEXT i
+
+RETURN
+
+
+//------------------------------------------------------
+GETS2:
+//Prende una stringa puntata da Intg
+//Visto che GETS non funziona
+GETS2s$=""
+Intg2=GET(Intg,#1)
+
+FOR Gets2i=Intg TO Intg+Intg2-1
+	Gets2i2=Gets2i
+	Gets21=0
+	Gets21=GET(Gets2i2,#1)
+	GETS2s$=GETS2s$+STR(\Gets21)
+NEXT Gets2i
+GETS2s$=MID(GETS2s$,1,LEN(GET2s$)-2)
+RETURN
+//------------------------------------------------------
+GetDfpnt:
+PRINT Spunt
+RETURN
+
+//-------------------------------------------------------
+//Sub InfoView2
+InfoView2:
+//Visualizza lo stato del datalogger
+//Da qui, premendo contemporaneamente due pulsanti che
+//si sceglieranno si potra' entrare nel menu' segreto
+//Messaggio da visualizzare
+//12345678901234567890
+//--------------------
+//hh:mm XXXmm XX.XoC
+//B vv.vV
+READRTC
+RTIME
+
+hour=?(2)
+minute=?(1)
+IF hour<10				//Padding ore e minuti con zeri se<10
+	LcdMsg$=STR("0",hour,":")
+ELSE
+	LcdMsg$=STR(hour,":")
+ENDIF
+IF minute<10
+	LcdMsg$=STR(LcdMsg$,"0",minute," ")
+ELSE
+	LcdMsg$=STR(LcdMsg$,minute," ")
+ENDIF
+LcdMsg$=LcdMsg+" Mlt"
+GOSUB SndMsgLcd1
+GOSUB CheckBat
+//GOSUB CheckPan
+//LcdMsg$=STR("B ",#2.1F,vBatt!," P",vPann,"V")	//Versione con tensione pannello solare
+LcdMsg$=STR(#2.1F,vBatt!,"V ",#6D,Dati)
+GOSUB SndMsgLcd2
+RETURN
+
+
+//--------------------------------------------------------------------------
+SensTest:
+//Test dei sensori in continuo
+
+//PRINT "Test dei sensori"
+
+GOTO Stest
+
+XMIT-
+//INPUT "" ?(5);	//Anno
+//INPUT "" ?(4);	//Mese
+//INPUT "" ?(3);	//Giorno
+//INPUT "" ?(2);	//Ora
+//INPUT "" ?(1);	//Minuti
+//INPUT "" ?(0);	//Secondi
+XMIT+
+//?(5)=1999
+//?(4)=12
+//INPUT "Giorno " ?(3);	//Giorno
+//INPUT "Ora " ?(2);	//Ora
+//INPUT "Minuti " ?(1);	//Minuti
+//?(0)=0		//Secondi
+
+STIME		//La scarica in ?
+SETRTC		//Scarica ? sull'orologio del PIC
+READRTC
+RTIME
+
+//PRINT
+//PRINT "Ora Datalogger",?(2),":",?(1),":",?(0);
+//PRINT " del ",?(3),"/",?(4),"/",?(5)
+//PRINT
+
+Stest:
+
+FOR i = 0 TO MaxCanali
+	//PRINT "Canale ",i
+	//INPUT "Attivo (0=inattivo)" CanaleAttivo(i)
+	XMIT-
+	INPUT "" CanaleAttivo(i)
+	XMIT+
+	CanaleADC(i)=0
+	CanaleMisura(i)=0
+	CanaleVolt(i)=0
+NEXT i
+
+//Controlla se Conducibilita' viene misurata.
+//Se si spegne INH
+//PSET INH
+//PCLR INH
+PSET Extern
+IF CanaleAttivo(1)<>0
+	PCLR INH
+ELSE
+	PSET INH
+ENDIF
+
+
+XMIT+
+PRINT "OK!"			//Partiamo!
+CBREAK Com
+//GOSUB OnLcd
+//GOSUB ClrLcd
+//SDO "Test sensori"
+error=0
+
+
+//Azzera il byte di oversleep (vedi manuale pag. 120)
+POKE &H9E,0
+
+
+iBatt=0			//Tensione batteria in binario
+vBatt!=0		//Tensione batteria in Volt
+Intg=0			//Intero generico
+volt!=0			//Tensione generica
+Intg=0			//Intero generico
+
+
+//INPUT "Parto ? (3=si altro=no)" dummy
+XMIT-
+INPUT "" dummy
+XMIT+
+IF dummy=3
+	GOTO TLoop
+ELSE
+	RETURN
+ENDIF
+
+TLoop:
+
+	
+//Loop di acquisizione
+
+
+PSET Extern
+//Piccola pausa
+//oppure sleep o HYB
+
+
+//Acquisizione canale 0 Temperatura
+
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(CanaleChan(0))
+NEXT j
+CanaleADC(0)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+//Acquisizione rimanenti canali 2 e 3 Livello e Ph
+FOR i = 2 TO 3
+	Somma=0
+	FOR j = 1 TO BProva
+		Somma=Somma+CHAN(CanaleChan(i))
+	NEXT j
+	CanaleADC(i)=INT(FLOAT(Somma/BProva)+0.5)/16
+	//IF BBPWR<>0 GOTO Dormi
+NEXT i
+
+//PCLR INH
+
+//Acquisizione Canale 1 Conducibilita'
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(1)
+NEXT j
+CanaleADC(1)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+
+
+//Acquisizione canale 4 Temperatura interna
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(CanaleChan(4))
+NEXT j
+CanaleADC(4)=INT(FLOAT(Somma/BProva)+0.5)/16
+//IF BBPWR<>0 GOTO Dormi
+
+
+GOSUB CheckBat			//Controlliamo la batteria principale
+CanaleADC(5)=iBatt/16
+
+//Fine acquisizione
+
+//PCLR Extern
+
+Time2=?
+
+//PRINT"Campionamento effettuato in ",Time2-EventTime," secondi"
+
+
+//Stampa acquisizioni
+FOR i = 0 to MaxCanali
+	IF CanaleAttivo(i)=1
+		PRINT CanaleADC(i)
+	ELSE
+		PRINT "0"
+	ENDIF
+NEXT i
+
+
+
+//Attesa per la prossima misura
+//INPUT "Continuo ? (3=si altro=no)" dummy
+XMIT-
+INPUT "" dummy
+XMIT+
+IF dummy=3
+ GOTO TLoop
+ENDIF
+PCLR INH
+PCLR Extern
+Return
+
+//---------------------------------------------------------------
+ScaricoProgrammazione:
+//Scarica la programmazione solamente e non i dati
+Index=0
+FOR i=0 TO 910
+	dummy=GET(Index,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i
+
+RETURN
+
+
+//---------------------------------------------------------------
+TaraPh:
+//Serve per la taratura del Ph
+//prende una misura di Ph singola
+//PSET Extern
+//PSET INH
+//Piccola pausa
+//oppure sleep o HYB
+SLEEP 0
+//SLEEP 2000
+	
+
+//Acquisizione canale 3 Ph
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(3)
+NEXT j
+CanaleADC(3)=INT(FLOAT(Somma/BProva)+0.5)/16
+PRINT CanaleADC(3)
+//PCLR INH
+//PCLR Extern
+RETURN
+
+//--------------------------------------------------------------
+TaraCond:
+//Prende una misura di conducibilita'
+//PSET Extern
+//PCLR INH
+//Piccola pausa
+//oppure sleep o HYB
+SLEEP 0
+//SLEEP 2000
+
+//Acquisizione canale 1 Conducibilita'
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(1)
+NEXT j
+CanaleADC(1)=INT(FLOAT(Somma/BProva)+0.5)/16
+PRINT CanaleADC(1)
+//PCLR INH
+//PCLR Extern
+RETURN
+
+//--------------------------------------------------------------
+TaraTemp:
+//Prende una misura di Temperatura esterna
+//PSET Extern
+//PCLR INH
+//Piccola pausa
+//oppure sleep o HYB
+SLEEP 0
+//SLEEP 20
+
+//Acquisizione canale 0 Temperatura
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(0)
+NEXT j
+CanaleADC(0)=INT(FLOAT(Somma/BProva)+0.5)/16
+PRINT CanaleADC(0)
+//PCLR INH
+//PCLR Extern
+RETURN
+
+//--------------------------------------------------------------
+TaraTempInt:
+//Prende una misura di Temperatura Interna
+//PSET Extern
+//PCLR INH
+//Piccola pausa
+//oppure sleep o HYB
+SLEEP 0
+//SLEEP 20
+
+//Acquisizione canale 4 Temperatura interna
+Somma=0
+FOR j = 1 TO BProva
+	Somma=Somma+CHAN(4)
+NEXT j
+CanaleADC(4)=INT(FLOAT(Somma/BProva)+0.5)/16
+PRINT CanaleADC(4)
+//PCLR INH
+//PCLR Extern
+RETURN
+
+//------------------------------------------------------------
+CambiaOrario:
+XMIT-
+PRINT"Nuovo orario di accensione"
+INPUT "Ora ->" aOra
+VSTORE 10,aOra
+INPUT "Minuti" aMinuti
+VSTORE 11,aMinuti
+PRINT"Nuovo orario di spegnimento"
+INPUT "Ora ->" sOra
+VSTORE 12, sOra
+INPUT "Minuti" sMinuti
+VSTORE 13, sMinuti
+
+RETURN
+
+//------------------------------------------------------------
+ScaricaOrario:
+aOra=VGET(10)		//Prende l'orario di accensione e spegnimento dall'UUEEPROM
+aMinuti=VGET(11)
+sOra=VGET(12)
+sMinuti=VGET(13)
+XMIT+
+PRINT aOra
+PRINT aMinuti
+PRINT sOra
+PRINT sMinuti
+
+RETURN
+
+//-------------------------------------------------------------
+lBattFact:
+//Stampa il fattore batteria contenuto in UEEPROM e in BattFact
+XMIT+
+BattFact! = ASFLT(VGET(14))
+PRINT BattFact!
+
+RETURN
+
+//-------------------------------------------------------------
+rBattFact:
+//Memorizza il nuovo fattore batteria
+XMIT-
+INPUT "" BattFact!
+VSTORE 14, BattFact!
+
+RETURN
+
+//-------------------------------------------------------------
+ExternOn:
+//Accensione linea Extern
+PSET Extern
+RETURN
+
+//-------------------------------------------------------------
+ExternOff:
+//Spegnimento linea Extern
+PCLR Extern
+RETURN
+
+//-------------------------------------------------------------
+INHOn:
+//Accensione linea INH
+PSET INH
+RETURN
+
+//-------------------------------------------------------------
+INHOff:
+//Spegnimento linea INH
+PCLR INH
+RETURN
+
+//-------------------------------------------------------------
+rOrario:
+//Stampa l'ora del TFX in formato data di VB
+PRINT ?(5),"/",?(4),"/",?(3)," ",?(2),":",?(1),":",?(0)
+RETURN
+
+//-------------------------------------------------------------
+rDFMAX:
+//Stampa la quantita' di memoria libera per i dati
+PRINT DFMAX
+RETURN
+

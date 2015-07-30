@@ -1,0 +1,5 @@
+w=1
+FOR i=0 TO 51
+	dummy=GET(w,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i

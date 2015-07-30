@@ -1,0 +1,99 @@
+FOR i=1 TO 10
+	PRINT
+NEXT i
+PRINT "Test cancellazione Memoria"
+PRINT
+IF DFPNT <> 0 //THEN
+	PRINT "Cancellare la memoria con i comandi diretti!!!!"
+	STOP
+ENDIF
+PRINT "Datafile ->",DFPNT
+PRINT "Registrazione dati fausi"
+PRINT
+STORE "1234567890"
+STORE "1234567890"
+STORE "1234567890"
+STORE "1234567890"
+STORE "1234567890"
+PRINT "Registrazione effettuata"
+PRINT
+PRINT "Datafile ->",DFPNT
+PRINT
+PRINT "Inizio ciclo cancellazione memoria"
+PRINT
+//Cancella tutto il datafile nella Flash
+
+//Modifica per modello senza tastiera e LCD
+
+TFErr = 0               // used to signal error (non-zero if error)
+
+asm $
+SelEE   equ     H'FD8B  ; function to select flash EEPROM
+SelNone equ     H'FD8E  ; function to unselect flash EEPROM
+EEErase equ     H'FD85  ; function to erase a block of flash EEPROM
+EEWEnab equ     H'CAF1  ; function to write enable flash EEPROM
+EEWDis  equ     H'CAFD  ; function to write disable flash EEPROM
+DFBlks  equ     H'13B   ; address of list of datafile blocks
+
+	jsr	H'FD88	; Flush STORE buffer to EEPROM
+        jsr     SelEE   ; select flash on SPI bus
+        jsr     EEWEnab ; write enable flash (needed for erasing, too)
+        ldx     #DFBlks ; X register holds address of datafile blocks
+_EEClr  ldab    0,x     ; load next datafile block # in B register
+        cmpb    #H'FF   ; check if this is end of list
+        beq     _xeec   ; branch to _xeec if this is end of list
+        jsr     EEErase ; erase the flash block whose # is in B reg
+        bvs     _eecerr ; branch if time-out error on erase
+        bcs     _eecerr ; branch if block did not erase
+        inx             ; point to next position in datafile block list
+        bra     _EEClr  ; loop back to do this block
+_xeec   jsr     EEWDis  ; write disable flash EEPROM
+        jsr     SelNone ; deselect flash EEPROM on SPI bus
+        rts
+_eecerr inc     TFErr+3 ; here if error, make value non-zero
+        bra     _xeec   ; finish up as normal
+        end
+
+IF TFErr = 0
+        		//OK
+        POKE &hB0,0     // clear the datafile pointer
+        POKE &hB1,0
+        POKE &hB2,0
+        POKE &hB3,0
+	//STOP
+	PRINT "Cancellazione effettuata!"
+ELSE
+
+	SLEEP 0
+	SLEEP 200
+	PRINT "Cancellazione fallita!!"
+ENDIF
+
+PRINT
+
+PRINT "Datafile ->",DFPNT
+PRINT
+PRINT "Inizio ciclo HYB 5 secondi"
+HYB 5
+PRINT "Fine ciclo HYB"
+PRINT
+PRINT "Registrazione nuovi dati fausi"
+PRINT
+STORE "Funziona!!"
+STORE "Funziona!!"
+STORE "Funziona!!"
+STORE "Funziona!!"
+STORE "Funziona!!"
+PRINT "Registrazione effettuata"
+PRINT
+PRINT "E adesso leggiamo!!"
+PRINT
+FOR i=0 TO DFPNT-1
+	dummy=GET(Index,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i
+PRINT
+FOR i=0 TO 51
+	dummy=GET(Index,#1)
+	PRINT \dummy;	//CHR$(dummy);
+NEXT i
